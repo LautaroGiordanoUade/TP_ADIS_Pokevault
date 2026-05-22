@@ -1,0 +1,19 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: pokevault-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: pokevault
+      MYSQL_DATABASE: pokevault
+    ports:
+      - "3306:3306"
+    volumes:
+      - pokevault_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppokevault"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pokevault_mysql_data:
