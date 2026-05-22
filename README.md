@@ -1,8 +1,7 @@
 # TP_ADIS_Pokevault
 
 This repository currently contains the migrated backend in `backend.Api/`.
-
-The previous TypeScript backend was replaced by a Python FastAPI structure inside `backend.Api/` while preserving the existing PokeVault API behavior:
+Python FastAPI structure inside `backend.Api/` while preserving PokeVault API behavior:
 
 - `GET /api/pokemon`
 - `GET /api/pokemon/{pokemon_id}`
