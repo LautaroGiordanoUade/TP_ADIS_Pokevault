@@ -29,21 +29,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.pokevault.mobile.BuildConfig
 import com.pokevault.mobile.domain.model.Order
 import com.pokevault.mobile.domain.model.OrderStatus
 import com.pokevault.mobile.ui.feature.components.money
@@ -62,10 +66,37 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val credentialManager = remember(context) { CredentialManager.create(context) }
 
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
-            if (effect == ProfileEffect.NavigateToPickup) onOpenPickup()
+            when (effect) {
+                ProfileEffect.NavigateToPickup -> onOpenPickup()
+                ProfileEffect.RequestGoogleSignIn -> {
+                    if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
+                        viewModel.onEvent(ProfileEvent.OnLoginFailed("Falta configurar GOOGLE_WEB_CLIENT_ID"))
+                    } else {
+                        runCatching {
+                            val googleIdOption = GetGoogleIdOption.Builder()
+                                .setFilterByAuthorizedAccounts(false)
+                                .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                                .build()
+                            val request = GetCredentialRequest.Builder()
+                                .addCredentialOption(googleIdOption)
+                                .build()
+                            val result = credentialManager.getCredential(context, request)
+                            GoogleIdTokenCredential.createFrom(result.credential.data).idToken
+                        }.onSuccess { idToken ->
+                            viewModel.onEvent(ProfileEvent.OnGoogleIdTokenReceived(idToken))
+                        }.onFailure { error ->
+                            viewModel.onEvent(
+                                ProfileEvent.OnLoginFailed(error.message ?: "No se pudo iniciar sesion con Google")
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -104,44 +135,22 @@ private fun LoginContent(
         Spacer(Modifier.height(14.dp))
         Text("INGRESAR A POKEMARKET", fontWeight = FontWeight.ExtraBold)
         Text(
-            "Introduce tus credenciales de Entrenador Pokemon para iniciar transacciones y rastrear envios directos.",
+            "Continua con Google para guardar favoritos y ver tu historial de compras.",
             color = Muted,
             modifier = Modifier.padding(vertical = 10.dp),
         )
-        LoginField("NOMBRE DE ENTRENADOR", state.name, { onEvent(ProfileEvent.OnNameChange(it)) })
-        LoginField("CORREO ELECTRONICO", state.email, { onEvent(ProfileEvent.OnEmailChange(it)) })
-        LoginField("CONTRASENA DE ACCESO", state.password, { onEvent(ProfileEvent.OnPasswordChange(it)) }, isPassword = true)
         Button(
-            onClick = { onEvent(ProfileEvent.OnLoginClick) },
+            onClick = { onEvent(ProfileEvent.OnGoogleLoginClick) },
+            enabled = !state.isLoading,
             colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
-            Text("INICIAR SESION", fontWeight = FontWeight.ExtraBold)
+            Text(if (state.isLoading) "CONECTANDO..." else "CONTINUAR CON GOOGLE", fontWeight = FontWeight.ExtraBold)
         }
-        Text("- O ACCESO RAPIDO DE PRUEBA -", color = Muted, modifier = Modifier.padding(top = 22.dp), style = MaterialTheme.typography.labelSmall)
-        OutlinedButton(onClick = { onEvent(ProfileEvent.OnQuickLoginClick) }) {
-            Text("Ingresar rapido como Ash Ketchum", style = MaterialTheme.typography.labelSmall)
+        state.errorMessage?.let { message ->
+            Text(message, color = Color(0xFFB00020), modifier = Modifier.padding(top = 12.dp))
         }
-    }
-}
-
-@Composable
-private fun LoginField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    isPassword: Boolean = false,
-) {
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-        Text(label, style = MaterialTheme.typography.labelSmall)
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }
 
@@ -177,8 +186,8 @@ private fun ProfileContent(
                     Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.AccountBalanceWallet, null, tint = MarketOrange)
                         Column(modifier = Modifier.padding(horizontal = 14.dp)) {
-                            Text("SALDO:", color = Muted, style = MaterialTheme.typography.labelSmall)
-                            Text(state.profile?.balance?.money().orEmpty(), fontWeight = FontWeight.ExtraBold)
+                            Text("CUENTA:", color = Muted, style = MaterialTheme.typography.labelSmall)
+                            Text("Google", fontWeight = FontWeight.ExtraBold)
                         }
                         Text("VIP", color = MarketOrange, style = MaterialTheme.typography.labelSmall)
                     }
@@ -188,6 +197,15 @@ private fun ProfileContent(
         item { Text("HISTORIAL DE COMPRAS (${state.orders.size})", style = MaterialTheme.typography.labelSmall) }
         items(state.orders, key = { it.id }) { order ->
             OrderCard(order = order, onPickupClick = { onEvent(ProfileEvent.OnPickupClick(order.id)) })
+        }
+        item {
+            OutlinedButton(
+                onClick = { onEvent(ProfileEvent.OnLogoutClick) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Text("CERRAR SESION", fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

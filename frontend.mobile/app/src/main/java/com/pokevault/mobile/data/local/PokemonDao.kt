@@ -17,6 +17,9 @@ interface PokemonDao {
     @Query("SELECT * FROM pokemon_cards WHERE isFavorite = 1 ORDER BY name")
     fun observeFavorites(): Flow<List<PokemonEntity>>
 
+    @Query("SELECT * FROM pokemon_cards WHERE id = :cardId")
+    suspend fun getCardById(cardId: Int): PokemonEntity?
+
     @Query("SELECT COUNT(*) FROM pokemon_cards")
     suspend fun countCards(): Int
 
@@ -24,5 +27,5 @@ interface PokemonDao {
     suspend fun upsertCards(cards: List<PokemonEntity>)
 
     @Query("UPDATE pokemon_cards SET isFavorite = :isFavorite WHERE id = :cardId")
-    suspend fun setFavorite(cardId: String, isFavorite: Boolean)
+    suspend fun setFavorite(cardId: Int, isFavorite: Boolean)
 }

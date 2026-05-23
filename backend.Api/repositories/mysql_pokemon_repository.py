@@ -6,6 +6,8 @@ from db.database import connection, init_db
 from models.pokemon import Pokemon, VaultItem
 from repositories.base import PokemonRepository
 
+DEFAULT_INVENTORY_QUANTITY = 10
+
 
 def _parse_datetime(value) -> datetime:
     if isinstance(value, datetime):
@@ -37,7 +39,8 @@ def _pokemon_from_row(row: dict) -> Pokemon:
         price = float(price)
 
     return Pokemon(
-        id=row["id"],
+        id=row.get("id"),
+        external_id=row["external_id"],
         name=row["name"],
         image=row["image"],
         rarity=row.get("rarity"),
@@ -100,7 +103,7 @@ class MySQLPokemonRepository(PokemonRepository):
 
         return [_pokemon_from_row(row) for row in rows], total
 
-    async def find_by_id(self, pokemon_id: str) -> Pokemon | None:
+    async def find_by_id(self, pokemon_id: int) -> Pokemon | None:
         self._ensure_initialized()
         with connection() as conn:
             with conn.cursor() as cursor:
@@ -119,8 +122,8 @@ class MySQLPokemonRepository(PokemonRepository):
                     cursor.execute(
                         """
                         INSERT INTO pokemon_cards (
-                            id, name, image, rarity, price, description, type,
-                            set_name, number, artist, source, raw_json
+                            external_id, name, image, rarity, price, description,
+                            type, set_name, number, artist, source, raw_json
                         )
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE
@@ -138,7 +141,7 @@ class MySQLPokemonRepository(PokemonRepository):
                             updated_at = CURRENT_TIMESTAMP
                         """,
                         (
-                            card.id,
+                            card.external_id,
                             card.name,
                             card.image,
                             card.rarity,
@@ -152,9 +155,22 @@ class MySQLPokemonRepository(PokemonRepository):
                             card.raw_json,
                         ),
                     )
+                    cursor.execute(
+                        "SELECT id FROM pokemon_cards WHERE external_id = %s",
+                        (card.external_id,),
+                    )
+                    pokemon_id = cursor.fetchone()["id"]
+                    cursor.execute(
+                        """
+                        INSERT INTO inventory (pokemon_id, quantity)
+                        VALUES (%s, %s)
+                        ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
+                        """,
+                        (pokemon_id, DEFAULT_INVENTORY_QUANTITY),
+                    )
         return len(pokemon)
 
-    async def get_vault(self, user_id: str) -> list[VaultItem]:
+    async def get_vault(self, user_id: int) -> list[VaultItem]:
         self._ensure_initialized()
         with connection() as conn:
             with conn.cursor() as cursor:
@@ -189,20 +205,19 @@ class MySQLPokemonRepository(PokemonRepository):
             )
         return items
 
-    async def add_to_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def add_to_vault(self, user_id: int, pokemon_id: int) -> None:
         self._ensure_initialized()
-        item_id = f"{user_id}_{pokemon_id}"
         with connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT IGNORE INTO vault_items (id, user_id, pokemon_id)
-                    VALUES (%s, %s, %s)
+                    INSERT IGNORE INTO vault_items (user_id, pokemon_id)
+                    VALUES (%s, %s)
                     """,
-                    (item_id, user_id, pokemon_id),
+                    (user_id, pokemon_id),
                 )
 
-    async def remove_from_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def remove_from_vault(self, user_id: int, pokemon_id: int) -> None:
         self._ensure_initialized()
         with connection() as conn:
             with conn.cursor() as cursor:

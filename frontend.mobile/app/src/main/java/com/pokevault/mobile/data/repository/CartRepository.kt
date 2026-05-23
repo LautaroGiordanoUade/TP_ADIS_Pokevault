@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface CartRepository {
     val items: Flow<List<CartItem>>
     fun add(card: PokemonCard)
-    fun remove(cardId: String)
-    fun increment(cardId: String)
-    fun decrement(cardId: String)
+    fun remove(cardId: Int)
+    fun increment(cardId: Int)
+    fun decrement(cardId: Int)
     fun clear()
 }

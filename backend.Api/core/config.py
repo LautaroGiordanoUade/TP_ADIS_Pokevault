@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     tcggo_game: str = "pokemon"
     pokemon_tcg_api_base_url: str = "https://api.pokemontcg.io/v2"
     pokemon_tcg_api_key: str | None = None
+    google_web_client_id: str | None = None
+    session_token_ttl_hours: int = 720
 
     model_config = SettingsConfigDict(
         env_file=".env",

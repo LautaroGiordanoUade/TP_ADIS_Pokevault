@@ -1,7 +1,7 @@
 package com.pokevault.mobile.domain.model
 
 data class Order(
-    val id: String,
+    val id: Int,
     val title: String,
     val quantity: Int,
     val amount: Double,

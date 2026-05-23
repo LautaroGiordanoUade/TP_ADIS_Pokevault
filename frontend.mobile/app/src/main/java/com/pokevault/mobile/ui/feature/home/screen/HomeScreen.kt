@@ -47,6 +47,7 @@ import com.pokevault.mobile.ui.theme.Muted
 fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onOpenSearch: () -> Unit,
+    onCardClick: (Int) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,6 +66,7 @@ fun HomeScreen(
         snackbarHostState = snackbarHostState,
         contentPadding = contentPadding,
         onOpenSearch = onOpenSearch,
+        onCardClick = onCardClick,
         onEvent = viewModel::onEvent,
     )
 }
@@ -75,6 +77,7 @@ fun HomeContent(
     snackbarHostState: SnackbarHostState,
     contentPadding: PaddingValues,
     onOpenSearch: () -> Unit,
+    onCardClick: (Int) -> Unit,
     onEvent: (HomeEvent) -> Unit,
 ) {
     Column(modifier = Modifier
@@ -114,7 +117,7 @@ fun HomeContent(
         }
         Spacer(Modifier.height(16.dp))
         Row {
-            Text("COLECCION DE FAVORITOS (${state.favorites.size})", style = MaterialTheme.typography.labelSmall)
+            Text("COLECCION", style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.weight(1f))
             Text("Tus joyas de coleccion", color = Muted, style = MaterialTheme.typography.labelSmall)
         }
@@ -137,6 +140,7 @@ fun HomeContent(
                         card = card,
                         onFavoriteClick = { onEvent(HomeEvent.OnFavoriteClick(it)) },
                         onAddToCart = { onEvent(HomeEvent.OnAddToCart(it)) },
+                        onCardClick = onCardClick
                     )
                 }
             }

@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PokemonBase(BaseModel):
-    id: str
+    external_id: str = Field(alias="externalId")
     name: str
     image: str
     rarity: str | None = None
@@ -24,6 +24,7 @@ class PokemonCreate(PokemonBase):
 
 
 class PokemonRead(PokemonBase):
+    id: int
     created_at: datetime = Field(alias="createdAt")
     updated_at: datetime = Field(alias="updatedAt")
 
