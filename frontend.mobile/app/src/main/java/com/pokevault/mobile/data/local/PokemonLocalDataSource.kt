@@ -15,7 +15,9 @@ class PokemonLocalDataSource @Inject constructor(
 
     suspend fun saveCards(cards: List<PokemonEntity>) = dao.upsertCards(cards)
 
-    suspend fun setFavorite(cardId: String, isFavorite: Boolean) {
+    suspend fun setFavorite(cardId: Int, isFavorite: Boolean) {
         dao.setFavorite(cardId, isFavorite)
     }
+
+    suspend fun getCardById(cardId: Int): PokemonEntity? = dao.getCardById(cardId)
 }

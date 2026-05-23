@@ -1,6 +1,7 @@
 package com.pokevault.mobile.ui.feature.search.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,21 +10,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -40,12 +48,14 @@ import com.pokevault.mobile.ui.theme.Muted
 @Composable
 fun SearchScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    onCardClick: (Int) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     SearchContent(
         state = state,
         contentPadding = contentPadding,
+        onCardClick = onCardClick,
         onEvent = viewModel::onEvent
     )
 }
@@ -54,8 +64,24 @@ fun SearchScreen(
 fun SearchContent(
     state: SearchUiState,
     contentPadding: PaddingValues,
+    onCardClick: (Int) -> Unit,
     onEvent: (SearchEvent) -> Unit,
 ) {
+    val gridState = rememberLazyGridState()
+
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItem = gridState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            lastVisibleItem.index >= state.cards.size - 4
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value && !state.isLoading && state.cards.isNotEmpty()) {
+            onEvent(SearchEvent.LoadNextPage)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,26 +112,56 @@ fun SearchContent(
                 Text("Filtros", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
             }
         }
+
         if (state.filtersVisible) {
             Spacer(Modifier.height(14.dp))
             FilterPanel(state)
         }
+
         Spacer(Modifier.height(14.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(
-                bottom = contentPadding.calculateBottomPadding() + 16.dp,
-                top = 8.dp
-            ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(state.cards, key = { it.id }) { card ->
-                PokemonCardItem(
-                    card = card,
-                    onFavoriteClick = { onEvent(SearchEvent.OnFavoriteClick(it)) },
-                    onAddToCart = { onEvent(SearchEvent.OnAddToCart(it)) },
+
+        Box(modifier = Modifier.weight(1f)) {
+            LazyVerticalGrid(
+                state = gridState,
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    bottom = contentPadding.calculateBottomPadding() + 80.dp,
+                    top = 8.dp
+                ),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                itemsIndexed(state.cards, key = { _, card -> card.id }) { index, card ->
+                    PokemonCardItem(
+                        card = card,
+                        onFavoriteClick = { onEvent(SearchEvent.OnFavoriteClick(it)) },
+                        onAddToCart = { onEvent(SearchEvent.OnAddToCart(it)) },
+                        onCardClick = onCardClick
+                    )
+                }
+
+                if (state.isLoading && state.cards.isNotEmpty()) {
+                    item {
+                        Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MarketOrange, modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
+            }
+
+            if (state.isLoading && state.cards.isEmpty()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = MarketOrange
+                )
+            }
+
+            if (!state.isLoading && state.cards.isEmpty()) {
+                Text(
+                    "No se encontraron cartas",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Muted
                 )
             }
         }

@@ -23,20 +23,20 @@ interface PokemonApi {
     ): PokemonPageDto
 
     @GET("pokemon/{pokemonId}")
-    suspend fun getPokemon(@Path("pokemonId") pokemonId: String): PokemonDto
+    suspend fun getPokemon(@Path("pokemonId") pokemonId: Int): PokemonDto
 
     @GET("pokemon/vault/{userId}")
-    suspend fun getVault(@Path("userId") userId: String): List<VaultItemDto>
+    suspend fun getVault(@Path("userId") userId: Int): List<VaultItemDto>
 
     @POST("pokemon/vault/{userId}/add")
     suspend fun addToVault(
-        @Path("userId") userId: String,
+        @Path("userId") userId: Int,
         @Body payload: AddVaultItemRequestDto,
     )
 
     @DELETE("pokemon/vault/{userId}/remove/{pokemonId}")
     suspend fun removeFromVault(
-        @Path("userId") userId: String,
-        @Path("pokemonId") pokemonId: String,
+        @Path("userId") userId: Int,
+        @Path("pokemonId") pokemonId: Int,
     )
 }

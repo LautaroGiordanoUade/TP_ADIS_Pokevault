@@ -12,18 +12,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.pokevault.mobile.ui.feature.cart.screen.CartScreen
 import com.pokevault.mobile.ui.feature.cart.viewmodel.CartViewModel
+import com.pokevault.mobile.ui.feature.detail.screen.DetailScreen
 import com.pokevault.mobile.ui.feature.home.screen.HomeScreen
 import com.pokevault.mobile.ui.feature.pickup.screen.PickupScreen
 import com.pokevault.mobile.ui.feature.profile.screen.ProfileScreen
@@ -36,65 +38,66 @@ fun PokeMarketNavHost() {
     val navController = rememberNavController()
     val cartViewModel: CartViewModel = hiltViewModel()
     val cartState by cartViewModel.uiState.collectAsStateWithLifecycle()
-    
-    // Observamos la entrada actual de la pila para reaccionar a cambios de ruta
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
-            ) {
-                bottomDestinations.forEach { screen ->
-                    // Selección precisa: coincide la ruta actual o estamos en una sub-pantalla (como Pickup)
-                    val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true ||
-                                   (screen == PokeMarketDestination.Profile && currentDestination?.route == PokeMarketDestination.Pickup.route)
-                    
-                    NavigationBarItem(
-                        selected = isSelected,
-                        label = { 
-                            Text(
-                                text = screen.label, 
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            ) 
-                        },
-                        icon = {
-                            BadgedBox(
-                                badge = {
-                                    if (screen == PokeMarketDestination.Cart && cartState.totalQuantity > 0) {
-                                        Badge(containerColor = MarketOrange, contentColor = Color.Black) {
-                                            Text(cartState.totalQuantity.toString())
+            // Mostrar BottomBar en destinos principales y también en el detalle para navegación libre
+            val currentRoute = currentDestination?.route
+            val isDetail = currentRoute?.contains("detail") == true
+            val isBottomDest = bottomDestinations.any { it.route == currentRoute }
+
+            if (isBottomDest || isDetail) {
+                NavigationBar(
+                    containerColor = Color.White,
+                    tonalElevation = 8.dp
+                ) {
+                    bottomDestinations.forEach { screen ->
+                        val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true ||
+                                       (screen == PokeMarketDestination.Profile && currentRoute == PokeMarketDestination.Pickup.route)
+
+                        NavigationBarItem(
+                            selected = isSelected,
+                            label = {
+                                Text(
+                                    text = screen.label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
+                                )
+                            },
+                            icon = {
+                                BadgedBox(
+                                    badge = {
+                                        if (screen == PokeMarketDestination.Cart && cartState.totalQuantity > 0) {
+                                            Badge(containerColor = MarketOrange, contentColor = Color.Black) {
+                                                Text(cartState.totalQuantity.toString())
+                                            }
                                         }
                                     }
+                                ) {
+                                    Icon(screen.icon!!, contentDescription = screen.label)
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = screen.icon, 
-                                    contentDescription = screen.label
-                                )
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.Black,
-                            selectedTextColor = Color.Black,
-                            indicatorColor = MarketOrange, // Sombreado naranja
-                            unselectedIconColor = Muted,
-                            unselectedTextColor = Muted
-                        ),
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                // Limpia la pila para evitar duplicados y que el sombreado se "trabe"
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.Black,
+                                selectedTextColor = Color.Black,
+                                indicatorColor = MarketOrange,
+                                unselectedIconColor = Muted,
+                                unselectedTextColor = Muted
+                            ),
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -106,37 +109,42 @@ fun PokeMarketNavHost() {
             composable(PokeMarketDestination.Home.route) {
                 HomeScreen(
                     contentPadding = innerPadding,
-                    onOpenSearch = { 
-                        navController.navigate(PokeMarketDestination.Search.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                    onOpenSearch = {
+                        navController.navigate(PokeMarketDestination.Search.route)
+                    },
+                    onCardClick = { cardId ->
+                        navController.navigate(PokeMarketDestination.Detail.createRoute(cardId))
                     }
                 )
             }
             composable(PokeMarketDestination.Search.route) {
-                SearchScreen(contentPadding = innerPadding)
+                SearchScreen(
+                    contentPadding = innerPadding,
+                    onCardClick = { cardId ->
+                        navController.navigate(PokeMarketDestination.Detail.createRoute(cardId))
+                    }
+                )
+            }
+            composable(
+                route = PokeMarketDestination.Detail.route,
+                arguments = listOf(navArgument("cardId") { type = NavType.IntType })
+            ) {
+                DetailScreen(contentPadding = innerPadding)
             }
             composable(PokeMarketDestination.Cart.route) {
                 CartScreen(
                     contentPadding = innerPadding,
                     viewModel = cartViewModel,
-                    onExploreCards = { 
-                        navController.navigate(PokeMarketDestination.Search.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                    onExploreCards = {
+                        navController.navigate(PokeMarketDestination.Search.route)
                     }
                 )
             }
             composable(PokeMarketDestination.Profile.route) {
                 ProfileScreen(
                     contentPadding = innerPadding,
-                    onOpenPickup = { 
-                        // El retiro es un detalle del perfil, se navega simple
-                        navController.navigate(PokeMarketDestination.Pickup.route) 
+                    onOpenPickup = {
+                        navController.navigate(PokeMarketDestination.Pickup.route)
                     }
                 )
             }

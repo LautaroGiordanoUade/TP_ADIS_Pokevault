@@ -1,7 +1,6 @@
 package com.pokevault.mobile.ui.feature.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,13 +37,15 @@ fun PokemonCardItem(
     card: PokemonCard,
     onFavoriteClick: (PokemonCard) -> Unit,
     onAddToCart: (PokemonCard) -> Unit,
+    onCardClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier,
+        onClick = { onCardClick(card.id) },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = BorderStroke(1.dp, Color(0xFFE7E7EA)),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
@@ -79,7 +80,7 @@ fun PokemonCardItem(
                     )
                 }
                 OutlinedButton(
-                    onClick = { onAddToCart(card) },
+                    onClick = { onCardClick(card.id) },
                     shape = RoundedCornerShape(6.dp),
                     modifier = Modifier.height(32.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),

@@ -1,41 +1,50 @@
 package com.pokevault.mobile.data.repository
 
-import com.pokevault.mobile.domain.model.Order
-import com.pokevault.mobile.domain.model.OrderStatus
-import com.pokevault.mobile.domain.model.UserProfile
 import com.pokevault.mobile.data.local.PreferencesDataSource
+import com.pokevault.mobile.data.mapper.toDomain
+import com.pokevault.mobile.data.remote.AuthApi
+import com.pokevault.mobile.data.remote.GoogleLoginRequestDto
+import com.pokevault.mobile.data.remote.OrderApi
+import com.pokevault.mobile.domain.model.Order
+import com.pokevault.mobile.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface ProfileRepository {
     val profile: Flow<UserProfile?>
-    val orders: Flow<List<Order>>
-    suspend fun login(name: String, email: String)
-    suspend fun quickLogin()
+    suspend fun loginWithGoogle(idToken: String)
+    suspend fun logout()
+    suspend fun refreshProfile()
+    suspend fun getOrders(): List<Order>
 }
 
 @Singleton
 class DefaultProfileRepository @Inject constructor(
     private val preferencesDataSource: PreferencesDataSource,
+    private val authApi: AuthApi,
+    private val orderApi: OrderApi,
 ) : ProfileRepository {
-    private val _orders = MutableStateFlow(
-        listOf(
-            Order("PKM-A7X2", "Pikachu Illustrator", 1, 4999.00, OrderStatus.ReadyForPickup, "Visa", 5011.50),
-            Order("PKM-B9P1", "Mewtwo EX Full Art", 2, 270.00, OrderStatus.Delivered, "MasterCard", 282.50),
-        ),
-    )
-
     override val profile: Flow<UserProfile?> = preferencesDataSource.profile
-    override val orders: Flow<List<Order>> = _orders.asStateFlow()
 
-    override suspend fun login(name: String, email: String) {
-        preferencesDataSource.saveProfile(UserProfile("ash-ketchum", name, email, 125_000.00, true))
+    override suspend fun loginWithGoogle(idToken: String) {
+        val response = authApi.loginWithGoogle(GoogleLoginRequestDto(idToken))
+        preferencesDataSource.saveSession(response.token, response.user.toDomain())
     }
 
-    override suspend fun quickLogin() {
-        login("Ash Ketchum", "ash.ketchum@pallet.org")
+    override suspend fun logout() {
+        runCatching { authApi.logout() }
+        preferencesDataSource.clearSession()
     }
+
+    override suspend fun refreshProfile() {
+        val token = preferencesDataSource.session.first().token.orEmpty()
+        if (token.isBlank()) {
+            return
+        }
+        preferencesDataSource.saveSession(token, authApi.me().toDomain())
+    }
+
+    override suspend fun getOrders(): List<Order> = orderApi.myOrders().map { it.toDomain() }
 }

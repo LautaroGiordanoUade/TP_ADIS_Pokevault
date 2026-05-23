@@ -19,6 +19,16 @@ private val Context.userPreferencesDataStore by preferencesDataStore(name = "use
 class PreferencesDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    val session: Flow<UserSession> = context.userPreferencesDataStore.data.map { preferences ->
+        UserSession(
+            token = preferences[Keys.Token],
+            userId = preferences[Keys.Id],
+            name = preferences[Keys.Name],
+            email = preferences[Keys.Email],
+            avatarUrl = preferences[Keys.AvatarUrl],
+        )
+    }
+
     val profile: Flow<UserProfile?> = context.userPreferencesDataStore.data.map { preferences ->
         val id = preferences[Keys.Id]
         val name = preferences[Keys.Name]
@@ -30,6 +40,7 @@ class PreferencesDataSource @Inject constructor(
                 id = id,
                 name = name,
                 email = email,
+                avatarUrl = preferences[Keys.AvatarUrl],
                 balance = preferences[Keys.Balance] ?: 125_000.00,
                 isVip = preferences[Keys.IsVip] ?: true,
             )
@@ -41,16 +52,47 @@ class PreferencesDataSource @Inject constructor(
             preferences[Keys.Id] = profile.id
             preferences[Keys.Name] = profile.name
             preferences[Keys.Email] = profile.email
+            profile.avatarUrl?.let { preferences[Keys.AvatarUrl] = it }
             preferences[Keys.Balance] = profile.balance
             preferences[Keys.IsVip] = profile.isVip
         }
     }
 
+    suspend fun saveSession(token: String, profile: UserProfile) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[Keys.Token] = token
+            preferences[Keys.Id] = profile.id
+            preferences[Keys.Name] = profile.name
+            preferences[Keys.Email] = profile.email
+            profile.avatarUrl?.let { preferences[Keys.AvatarUrl] = it }
+            preferences[Keys.Balance] = profile.balance
+            preferences[Keys.IsVip] = profile.isVip
+        }
+    }
+
+    suspend fun clearSession() {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
+
     private object Keys {
-        val Id = stringPreferencesKey("profile_id")
+        val Token = stringPreferencesKey("session_token")
+        val Id = androidx.datastore.preferences.core.intPreferencesKey("profile_id")
         val Name = stringPreferencesKey("profile_name")
         val Email = stringPreferencesKey("profile_email")
+        val AvatarUrl = stringPreferencesKey("profile_avatar_url")
         val Balance = doublePreferencesKey("profile_balance")
         val IsVip = booleanPreferencesKey("profile_is_vip")
     }
+}
+
+data class UserSession(
+    val token: String?,
+    val userId: Int?,
+    val name: String?,
+    val email: String?,
+    val avatarUrl: String?,
+) {
+    val isLoggedIn: Boolean = !token.isNullOrBlank()
 }

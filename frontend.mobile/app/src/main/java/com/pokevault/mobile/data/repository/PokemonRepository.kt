@@ -8,4 +8,8 @@ interface PokemonRepository {
     fun observeFavorites(): Flow<List<PokemonCard>>
     suspend fun refreshCards(query: String = "")
     suspend fun toggleFavorite(card: PokemonCard)
+    suspend fun listCards(query: String = "", page: Int = 1, pageSize: Int = 15): List<PokemonCard>
+    suspend fun listHomeCards(): List<PokemonCard>
+    suspend fun refreshFavorites(): List<PokemonCard>
+    suspend fun getCard(cardId: Int): PokemonCard?
 }

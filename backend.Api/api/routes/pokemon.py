@@ -36,7 +36,7 @@ async def search_pokemon(
 
 
 @router.get("/{pokemon_id}", response_model=PokemonRead)
-async def get_pokemon(pokemon_id: str) -> PokemonRead:
+async def get_pokemon(pokemon_id: int) -> PokemonRead:
     pokemon = await service.get_pokemon_by_id(pokemon_id)
     if pokemon is None:
         raise HTTPException(
@@ -53,17 +53,17 @@ async def sync_pokemon(cards: list[PokemonCreate]) -> SyncPokemonResponse:
 
 
 @router.get("/vault/{user_id}", response_model=list[VaultItemRead])
-async def get_vault(user_id: str) -> list[VaultItemRead]:
+async def get_vault(user_id: int) -> list[VaultItemRead]:
     return await service.get_vault(user_id)
 
 
 @router.post("/vault/{user_id}/add")
-async def add_to_vault(user_id: str, payload: AddVaultItemRequest) -> dict[str, bool]:
+async def add_to_vault(user_id: int, payload: AddVaultItemRequest) -> dict[str, bool]:
     await service.add_to_vault(user_id=user_id, pokemon_id=payload.pokemon_id)
     return {"success": True}
 
 
 @router.delete("/vault/{user_id}/remove/{pokemon_id}")
-async def remove_from_vault(user_id: str, pokemon_id: str) -> dict[str, bool]:
+async def remove_from_vault(user_id: int, pokemon_id: int) -> dict[str, bool]:
     await service.remove_from_vault(user_id=user_id, pokemon_id=pokemon_id)
     return {"success": True}

@@ -8,6 +8,9 @@ data class HomeUiState(
     val cards: List<PokemonCard> = emptyList(),
     val favorites: List<PokemonCard> = emptyList(),
     val errorMessage: String? = null,
+    val title: String = "GENGAR DESTACADOS",
+    val subtitle: String = "Inicia sesion para guardar favoritos",
+    val isLoggedIn: Boolean = false,
 )
 
 sealed interface HomeEvent {
@@ -15,7 +18,7 @@ sealed interface HomeEvent {
     data class OnQueryChange(val query: String) : HomeEvent
     data class OnFavoriteClick(val card: PokemonCard) : HomeEvent
     data class OnAddToCart(val card: PokemonCard) : HomeEvent
-    data class OnCardClick(val cardId: String) : HomeEvent
+    data class OnCardClick(val cardId: Int) : HomeEvent
 }
 
 sealed interface HomeEffect {

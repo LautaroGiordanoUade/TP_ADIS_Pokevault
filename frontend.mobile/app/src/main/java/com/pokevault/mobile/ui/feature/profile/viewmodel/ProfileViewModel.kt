@@ -21,24 +21,64 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
 ) : ViewModel() {
-    private val form = MutableStateFlow(ProfileUiState())
+    private val screenState = MutableStateFlow(ProfileUiState())
     private val _effects = Channel<ProfileEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    val uiState = combine(form, profileRepository.profile, profileRepository.orders) { formState, profile, orders ->
-        formState.copy(profile = profile, orders = orders)
+    val uiState = combine(screenState, profileRepository.profile) { state, profile ->
+        state.copy(profile = profile)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
+
+    init {
+        refresh()
+    }
 
     fun onEvent(event: ProfileEvent) {
         when (event) {
-            is ProfileEvent.OnNameChange -> form.update { it.copy(name = event.name) }
-            is ProfileEvent.OnEmailChange -> form.update { it.copy(email = event.email) }
-            is ProfileEvent.OnPasswordChange -> form.update { it.copy(password = event.password) }
-            ProfileEvent.OnLoginClick -> viewModelScope.launch {
-                profileRepository.login(uiState.value.name, uiState.value.email)
+            ProfileEvent.OnGoogleLoginClick -> viewModelScope.launch {
+                _effects.send(ProfileEffect.RequestGoogleSignIn)
             }
-            ProfileEvent.OnQuickLoginClick -> viewModelScope.launch { profileRepository.quickLogin() }
-            is ProfileEvent.OnPickupClick -> viewModelScope.launch { _effects.send(ProfileEffect.NavigateToPickup) }
+            is ProfileEvent.OnGoogleIdTokenReceived -> login(event.idToken)
+            is ProfileEvent.OnLoginFailed -> screenState.update {
+                it.copy(isLoading = false, errorMessage = event.message)
+            }
+            ProfileEvent.OnLogoutClick -> viewModelScope.launch {
+                profileRepository.logout()
+                screenState.value = ProfileUiState()
+            }
+            is ProfileEvent.OnPickupClick -> viewModelScope.launch {
+                _effects.send(ProfileEffect.NavigateToPickup)
+            }
+        }
+    }
+
+    private fun login(idToken: String) {
+        viewModelScope.launch {
+            screenState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching {
+                profileRepository.loginWithGoogle(idToken)
+                profileRepository.getOrders()
+            }.onSuccess { orders ->
+                screenState.update { it.copy(isLoading = false, orders = orders) }
+            }.onFailure { error ->
+                screenState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = error.message ?: "No se pudo iniciar sesion",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun refresh() {
+        viewModelScope.launch {
+            runCatching {
+                profileRepository.refreshProfile()
+                profileRepository.getOrders()
+            }.onSuccess { orders ->
+                screenState.update { it.copy(orders = orders) }
+            }
         }
     }
 }

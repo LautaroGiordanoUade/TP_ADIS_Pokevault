@@ -28,14 +28,15 @@ class PokemonService:
             totalPages=total_pages,
         )
 
-    async def get_pokemon_by_id(self, pokemon_id: str) -> PokemonRead | None:
+    async def get_pokemon_by_id(self, pokemon_id: int) -> PokemonRead | None:
         pokemon = await self.repository.find_by_id(pokemon_id)
         return PokemonRead.model_validate(pokemon) if pokemon else None
 
     async def sync_pokemon(self, cards: list[PokemonCreate]) -> int:
         domain_cards = [
             Pokemon(
-                id=card.id,
+                id=None,
+                external_id=card.external_id,
                 name=card.name,
                 image=card.image,
                 rarity=card.rarity,
@@ -51,12 +52,12 @@ class PokemonService:
         ]
         return await self.repository.upsert_many(domain_cards)
 
-    async def get_vault(self, user_id: str) -> list[VaultItemRead]:
+    async def get_vault(self, user_id: int) -> list[VaultItemRead]:
         vault = await self.repository.get_vault(user_id)
         return [VaultItemRead.model_validate(item) for item in vault]
 
-    async def add_to_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def add_to_vault(self, user_id: int, pokemon_id: int) -> None:
         await self.repository.add_to_vault(user_id=user_id, pokemon_id=pokemon_id)
 
-    async def remove_from_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def remove_from_vault(self, user_id: int, pokemon_id: int) -> None:
         await self.repository.remove_from_vault(user_id=user_id, pokemon_id=pokemon_id)

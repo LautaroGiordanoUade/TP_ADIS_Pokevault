@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pymysql import MySQLError
 
-from api.routes import health, pokemon
+from api.routes import auth, health, orders, pokemon, users, vault
 from core.config import settings
 
 
@@ -26,6 +26,10 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(pokemon.router, prefix=settings.api_v1_prefix)
+    app.include_router(auth.router, prefix=settings.api_v1_prefix)
+    app.include_router(users.router, prefix=settings.api_v1_prefix)
+    app.include_router(vault.router, prefix=settings.api_v1_prefix)
+    app.include_router(orders.router, prefix=settings.api_v1_prefix)
 
     @app.exception_handler(MySQLError)
     async def mysql_exception_handler(

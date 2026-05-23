@@ -9,7 +9,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
 from core.config import settings  # noqa: E402
-from db.database import connection, init_db  # noqa: E402
+from db.database import connection, recreate_db  # noqa: E402
 from models.pokemon import Pokemon  # noqa: E402
 from repositories.mysql_pokemon_repository import MySQLPokemonRepository  # noqa: E402
 
@@ -111,7 +111,8 @@ def _map_pokemon_tcg_card(card: dict, source: str = "pokemon_tcg_api") -> Pokemo
         description = " ".join(card["rules"])
 
     return Pokemon(
-        id=card["id"],
+        id=None,
+        external_id=card["id"],
         name=card["name"],
         image=images.get("large") or images.get("small") or "",
         rarity=card.get("rarity"),
@@ -131,7 +132,8 @@ def _map_tcggo_card(card: dict) -> Pokemon:
     types = raw_type if isinstance(raw_type, list) else [raw_type] if raw_type else None
 
     return Pokemon(
-        id=str(card.get("id") or card.get("cardId") or card.get("productId")),
+        id=None,
+        external_id=str(card.get("id") or card.get("cardId") or card.get("productId")),
         name=str(card.get("name") or card.get("cardName")),
         image=str(card.get("image") or card.get("imageUrl") or card.get("image_url") or ""),
         rarity=card.get("rarity"),
@@ -211,7 +213,8 @@ def fallback_cards() -> list[Pokemon]:
     for index, (set_id, card_number, name) in enumerate(card_specs, start=1):
         cards.append(
             Pokemon(
-                id=f"{set_id}-{card_number}",
+                id=None,
+                external_id=f"{set_id}-{card_number}",
                 name=name,
                 image=(
                     f"https://images.pokemontcg.io/{set_id}/{card_number}_hires.png"
@@ -229,6 +232,7 @@ def fallback_cards() -> list[Pokemon]:
 
 
 def remove_old_local_seed() -> None:
+    return
     placeholders = ", ".join(["%s"] * len(LOCAL_SEED_SOURCES))
     with connection() as conn:
         with conn.cursor() as cursor:
@@ -248,7 +252,7 @@ def remove_old_local_seed() -> None:
 
 
 async def main() -> None:
-    init_db()
+    recreate_db()
     repository = MySQLPokemonRepository()
     remove_old_local_seed()
 

@@ -11,13 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class InMemoryCartRepository @Inject constructor() : CartRepository {
-    private val _items = MutableStateFlow(
-        listOf(
-            CartItem(DemoCards.cards[1], 1),
-            CartItem(DemoCards.cards[2], 1),
-            CartItem(DemoCards.cards[0], 1),
-        ),
-    )
+    private val _items = MutableStateFlow<List<CartItem>>(emptyList())
 
     override val items: Flow<List<CartItem>> = _items.asStateFlow()
 
@@ -29,15 +23,15 @@ class InMemoryCartRepository @Inject constructor() : CartRepository {
         }
     }
 
-    override fun remove(cardId: String) {
+    override fun remove(cardId: Int) {
         _items.update { current -> current.filterNot { it.card.id == cardId } }
     }
 
-    override fun increment(cardId: String) {
+    override fun increment(cardId: Int) {
         _items.update { current -> current.map { if (it.card.id == cardId) it.copy(quantity = it.quantity + 1) else it } }
     }
 
-    override fun decrement(cardId: String) {
+    override fun decrement(cardId: Int) {
         _items.update { current ->
             current.mapNotNull {
                 if (it.card.id != cardId) it else it.copy(quantity = it.quantity - 1).takeIf { item -> item.quantity > 0 }

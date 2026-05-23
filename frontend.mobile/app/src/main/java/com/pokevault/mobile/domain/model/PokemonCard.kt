@@ -1,7 +1,8 @@
 package com.pokevault.mobile.domain.model
 
 data class PokemonCard(
-    val id: String,
+    val id: Int,
+    val externalId: String,
     val name: String,
     val imageUrl: String,
     val rarity: String?,

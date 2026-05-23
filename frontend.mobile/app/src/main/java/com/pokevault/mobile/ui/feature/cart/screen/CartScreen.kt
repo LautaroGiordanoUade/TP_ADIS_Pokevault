@@ -154,12 +154,16 @@ private fun CheckoutPanel(
         }
         Button(
             onClick = onConfirm,
+            enabled = !state.isSubmitting,
             colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
-            Text("CONFIRMAR PAGO ASEGURADO", fontWeight = FontWeight.ExtraBold)
+            Text(if (state.isSubmitting) "CONFIRMANDO..." else "CONFIRMAR PAGO ASEGURADO", fontWeight = FontWeight.ExtraBold)
             Icon(Icons.Outlined.Security, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
+        }
+        state.errorMessage?.let { message ->
+            Text(message, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
         }
     }
 }

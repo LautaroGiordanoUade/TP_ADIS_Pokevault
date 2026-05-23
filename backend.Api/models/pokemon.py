@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 
 @dataclass(slots=True)
 class Pokemon:
-    id: str
+    id: int | None
+    external_id: str
     name: str
     image: str
     price: float
@@ -22,8 +23,8 @@ class Pokemon:
 
 @dataclass(slots=True)
 class VaultItem:
-    id: str
-    user_id: str
-    pokemon_id: str
+    id: int
+    user_id: int
+    pokemon_id: int
     added_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     card: Pokemon | None = None

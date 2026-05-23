@@ -5,6 +5,8 @@ import com.pokevault.mobile.domain.model.CartItem
 data class CartUiState(
     val items: List<CartItem> = emptyList(),
     val deliveryAddress: String = "Av. Corrientes 1250, CABA, Argentina",
+    val isSubmitting: Boolean = false,
+    val errorMessage: String? = null,
 ) {
     val subtotal: Double = items.sumOf { it.card.price * it.quantity }
     val finalTotal: Double = subtotal
@@ -12,9 +14,9 @@ data class CartUiState(
 }
 
 sealed interface CartEvent {
-    data class OnIncrement(val cardId: String) : CartEvent
-    data class OnDecrement(val cardId: String) : CartEvent
-    data class OnRemove(val cardId: String) : CartEvent
+    data class OnIncrement(val cardId: Int) : CartEvent
+    data class OnDecrement(val cardId: Int) : CartEvent
+    data class OnRemove(val cardId: Int) : CartEvent
     data object OnConfirmPayment : CartEvent
     data object OnExploreCards : CartEvent
 }

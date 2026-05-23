@@ -14,7 +14,7 @@ class PokemonRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def find_by_id(self, pokemon_id: str) -> Pokemon | None:
+    async def find_by_id(self, pokemon_id: int) -> Pokemon | None:
         raise NotImplementedError
 
     @abstractmethod
@@ -22,13 +22,13 @@ class PokemonRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_vault(self, user_id: str) -> list[VaultItem]:
+    async def get_vault(self, user_id: int) -> list[VaultItem]:
         raise NotImplementedError
 
     @abstractmethod
-    async def add_to_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def add_to_vault(self, user_id: int, pokemon_id: int) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_from_vault(self, user_id: str, pokemon_id: str) -> None:
+    async def remove_from_vault(self, user_id: int, pokemon_id: int) -> None:
         raise NotImplementedError

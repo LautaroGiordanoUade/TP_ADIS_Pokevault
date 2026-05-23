@@ -42,6 +42,7 @@ MYSQL_USER=root
 MYSQL_PASSWORD_FILE=db/mysql_password.enc
 MYSQL_PASSWORD_KEY_FILE=db/mysql_password.key
 MYSQL_DATABASE=pokevault
+GOOGLE_WEB_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 ```
 
 Create the encrypted password file with:
@@ -74,6 +75,14 @@ docker compose up -d mysql
 - `GET /api/pokemon/vault/{user_id}`
 - `POST /api/pokemon/vault/{user_id}/add`
 - `DELETE /api/pokemon/vault/{user_id}/remove/{pokemon_id}`
+- `POST /api/auth/google`
+- `POST /api/auth/logout`
+- `GET /api/users/me`
+- `GET /api/vault/me`
+- `POST /api/vault/me/items`
+- `DELETE /api/vault/me/items/{pokemon_id}`
+- `GET /api/orders/me`
+- `POST /api/orders/me`
 
 ## Frontend Integration Example
 
@@ -88,3 +97,8 @@ export async function listPokemon() {
 ```
 
 The frontend should keep presentation and interaction state. Fetching pokemon, syncing cards, and vault mutations should go through this API.
+
+For Android Google Sign-In, configure the same web client id in:
+
+- `backend.Api/.env` as `GOOGLE_WEB_CLIENT_ID`
+- `frontend.mobile/local.properties` as `GOOGLE_WEB_CLIENT_ID`
