@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!frontend.mobile/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -25,6 +26,24 @@ replay_pid*
 
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
+**/.kotlin/
+
+# Gradle / Android local build state
+.gradle/
+**/.gradle/
+build/
+**/build/
+local.properties
+**/local.properties
+*.iml
+.idea/
+**/.idea/
+.cxx/
+**/.cxx/
+captures/
+**/captures/
+externalNativeBuild/
+**/externalNativeBuild/
 
 # Local environment and Python cache
 .env
