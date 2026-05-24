@@ -20,7 +20,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pokevault.mobile"
+        applicationId = "com.lgiordano.pokemarket"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

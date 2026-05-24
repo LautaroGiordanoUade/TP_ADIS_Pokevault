@@ -41,11 +41,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.pokevault.mobile.BuildConfig
 import com.pokevault.mobile.domain.model.Order
@@ -73,14 +76,17 @@ fun ProfileScreen(
         viewModel.effects.collect { effect ->
             when (effect) {
                 ProfileEffect.NavigateToPickup -> onOpenPickup()
+                ProfileEffect.ClearGoogleCredentialState -> {
+                    runCatching {
+                        credentialManager.clearCredentialState(ClearCredentialStateRequest())
+                    }
+                }
                 ProfileEffect.RequestGoogleSignIn -> {
                     if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
                         viewModel.onEvent(ProfileEvent.OnLoginFailed("Falta configurar GOOGLE_WEB_CLIENT_ID"))
                     } else {
                         runCatching {
-                            val googleIdOption = GetGoogleIdOption.Builder()
-                                .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                            val googleIdOption = GetSignInWithGoogleOption.Builder(BuildConfig.GOOGLE_WEB_CLIENT_ID)
                                 .build()
                             val request = GetCredentialRequest.Builder()
                                 .addCredentialOption(googleIdOption)
@@ -88,11 +94,21 @@ fun ProfileScreen(
                             val result = credentialManager.getCredential(context, request)
                             GoogleIdTokenCredential.createFrom(result.credential.data).idToken
                         }.onSuccess { idToken ->
-                            viewModel.onEvent(ProfileEvent.OnGoogleIdTokenReceived(idToken))
+                            if (idToken.isBlank()) {
+                                viewModel.onEvent(ProfileEvent.OnLoginFailed("Google no devolvio un token valido"))
+                            } else {
+                                viewModel.onEvent(ProfileEvent.OnGoogleIdTokenReceived(idToken))
+                            }
                         }.onFailure { error ->
-                            viewModel.onEvent(
-                                ProfileEvent.OnLoginFailed(error.message ?: "No se pudo iniciar sesion con Google")
-                            )
+                            when (error) {
+                                is GetCredentialCancellationException -> viewModel.onEvent(ProfileEvent.OnLoginCanceled)
+                                is NoCredentialException -> viewModel.onEvent(
+                                    ProfileEvent.OnLoginFailed("No hay cuentas de Google disponibles en este dispositivo")
+                                )
+                                else -> viewModel.onEvent(
+                                    ProfileEvent.OnLoginFailed(error.message ?: "No se pudo iniciar sesion con Google")
+                                )
+                            }
                         }
                     }
                 }

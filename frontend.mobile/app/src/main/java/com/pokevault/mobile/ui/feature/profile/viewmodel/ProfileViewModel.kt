@@ -36,15 +36,20 @@ class ProfileViewModel @Inject constructor(
     fun onEvent(event: ProfileEvent) {
         when (event) {
             ProfileEvent.OnGoogleLoginClick -> viewModelScope.launch {
+                screenState.update { it.copy(isLoading = true, errorMessage = null) }
                 _effects.send(ProfileEffect.RequestGoogleSignIn)
             }
             is ProfileEvent.OnGoogleIdTokenReceived -> login(event.idToken)
             is ProfileEvent.OnLoginFailed -> screenState.update {
                 it.copy(isLoading = false, errorMessage = event.message)
             }
+            ProfileEvent.OnLoginCanceled -> screenState.update {
+                it.copy(isLoading = false, errorMessage = null)
+            }
             ProfileEvent.OnLogoutClick -> viewModelScope.launch {
                 profileRepository.logout()
                 screenState.value = ProfileUiState()
+                _effects.send(ProfileEffect.ClearGoogleCredentialState)
             }
             is ProfileEvent.OnPickupClick -> viewModelScope.launch {
                 _effects.send(ProfileEffect.NavigateToPickup)

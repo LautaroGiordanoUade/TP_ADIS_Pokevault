@@ -48,8 +48,11 @@ externalNativeBuild/
 # Local environment and Python cache
 .env
 **/.env
+.venv/
+**/.venv/
 __pycache__/
 **/__pycache__/
 *.pyc
+backend.Api/.pokevault_seeded
 backend.Api/db/*.key
 backend.Api/db/*.enc
