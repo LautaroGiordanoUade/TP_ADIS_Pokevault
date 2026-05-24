@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from api.dependencies import current_user
 from models.user import User
-from repositories.mysql_user_repository import user_repository
+from repositories.mysql_user_repository import InsufficientStockError, user_repository
 from schemas.order import CreateOrderRequest, OrderRead
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -26,6 +26,8 @@ async def create_my_order(
             delivery_address=payload.delivery_address,
             payment_method=payload.payment_method,
         )
+    except InsufficientStockError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return OrderRead.model_validate(order)

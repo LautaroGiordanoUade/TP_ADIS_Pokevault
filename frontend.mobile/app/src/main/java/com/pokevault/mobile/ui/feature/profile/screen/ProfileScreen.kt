@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -47,6 +48,9 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -60,7 +64,6 @@ import com.pokevault.mobile.ui.feature.profile.state.ProfileUiState
 import com.pokevault.mobile.ui.feature.profile.viewmodel.ProfileViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
-import com.pokevault.mobile.ui.theme.SuccessGreen
 
 @Composable
 fun ProfileScreen(
@@ -71,6 +74,7 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val credentialManager = remember(context) { CredentialManager.create(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
@@ -114,6 +118,16 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onEvent(ProfileEvent.OnRefresh)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Box(modifier = Modifier
@@ -230,23 +244,25 @@ private fun ProfileContent(
 private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
     OutlinedCard(border = BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp)) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val isDelivered = order.statusId == 2 || order.status == OrderStatus.Delivered
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("ORDEN #${order.id}", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
-                Spacer(Modifier.weight(1f))
-                val statusColor = if (order.status == OrderStatus.ReadyForPickup) MarketOrange else SuccessGreen
-                Text(
-                    if (order.status == OrderStatus.ReadyForPickup) "PARA RETIRAR" else "ENTREGADO",
-                    color = statusColor,
-                    fontWeight = FontWeight.ExtraBold,
-                    style = MaterialTheme.typography.labelSmall,
-                )
+                if (!isDelivered) {
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "PARA RETIRAR",
+                        color = MarketOrange,
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
             }
             Row {
                 Text("${order.title} x${order.quantity}", color = Muted)
                 Spacer(Modifier.weight(1f))
                 Text(order.amount.money())
             }
-            if (order.status == OrderStatus.ReadyForPickup) {
+            if (!isDelivered) {
                 Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3DE)), border = BorderStroke(1.dp, MarketOrange)) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("LISTO PARA RETIRAR!\nSucursal: UADE (Lima 757, CABA)", color = MarketOrange, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -256,15 +272,11 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
                         }
                     }
                 }
-            } else {
-                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Text("ENTREGADO CON EXITO EL 10 MAY, 2026", color = Muted, modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.labelSmall)
+                Row {
+                    Text("Formula: ${order.paymentMethod}", style = MaterialTheme.typography.labelSmall)
+                    Spacer(Modifier.weight(1f))
+                    Text("Total: ${order.total.money()}", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
                 }
-            }
-            Row {
-                Text("Formula: ${order.paymentMethod}", style = MaterialTheme.typography.labelSmall)
-                Spacer(Modifier.weight(1f))
-                Text("Total: ${order.total.money()}", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
             }
         }
     }

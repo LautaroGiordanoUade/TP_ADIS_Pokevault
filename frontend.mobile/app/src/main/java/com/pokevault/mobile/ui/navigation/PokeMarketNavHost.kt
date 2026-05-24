@@ -112,6 +112,9 @@ fun PokeMarketNavHost() {
                     onOpenSearch = {
                         navController.navigate(PokeMarketDestination.Search.route)
                     },
+                    onOpenLogin = {
+                        navController.navigate(PokeMarketDestination.Profile.route)
+                    },
                     onCardClick = { cardId ->
                         navController.navigate(PokeMarketDestination.Detail.createRoute(cardId))
                     }
@@ -120,6 +123,9 @@ fun PokeMarketNavHost() {
             composable(PokeMarketDestination.Search.route) {
                 SearchScreen(
                     contentPadding = innerPadding,
+                    onOpenLogin = {
+                        navController.navigate(PokeMarketDestination.Profile.route)
+                    },
                     onCardClick = { cardId ->
                         navController.navigate(PokeMarketDestination.Detail.createRoute(cardId))
                     }
@@ -129,7 +135,12 @@ fun PokeMarketNavHost() {
                 route = PokeMarketDestination.Detail.route,
                 arguments = listOf(navArgument("cardId") { type = NavType.IntType })
             ) {
-                DetailScreen(contentPadding = innerPadding)
+                DetailScreen(
+                    contentPadding = innerPadding,
+                    onOpenLogin = {
+                        navController.navigate(PokeMarketDestination.Profile.route)
+                    },
+                )
             }
             composable(PokeMarketDestination.Cart.route) {
                 CartScreen(
@@ -149,7 +160,10 @@ fun PokeMarketNavHost() {
                 )
             }
             composable(PokeMarketDestination.Pickup.route) {
-                PickupScreen(contentPadding = innerPadding)
+                PickupScreen(
+                    contentPadding = innerPadding,
+                    onClose = { navController.popBackStack() },
+                )
             }
         }
     }

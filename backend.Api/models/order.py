@@ -20,6 +20,7 @@ class Order:
     user_id: int
     delivery_address: str
     payment_method: str
+    status_id: int
     status: str
     subtotal: float
     shipping: float

@@ -52,7 +52,11 @@ class DefaultPokemonRepository @Inject constructor(
     }
 
     override suspend fun listCards(query: String, page: Int, pageSize: Int): List<PokemonCard> {
-        val favoriteIds = favorites.value.map { it.id }.toSet()
+        val favoriteIds = if (preferencesDataSource.session.first().isLoggedIn) {
+            refreshFavorites().map { it.id }.toSet()
+        } else {
+            emptySet()
+        }
         return remoteDataSource.listCards(
             page = page,
             pageSize = pageSize,
@@ -64,6 +68,7 @@ class DefaultPokemonRepository @Inject constructor(
         return if (preferencesDataSource.session.first().isLoggedIn) {
             refreshFavorites()
         } else {
+            favorites.value = emptyList()
             listCards(query = "gengar", page = 1, pageSize = 3)
         }
     }
@@ -79,11 +84,15 @@ class DefaultPokemonRepository @Inject constructor(
     }
 
     override suspend fun getCard(cardId: Int): PokemonCard? {
-        val localCard = localDataSource.getCardById(cardId)?.toDomain()
+        val isLoggedIn = preferencesDataSource.session.first().isLoggedIn
+        val favoriteIds = if (isLoggedIn) refreshFavorites().map { it.id }.toSet() else emptySet()
+        val localCard = localDataSource.getCardById(cardId)?.toDomain()?.let { card ->
+            card.copy(isFavorite = card.id in favoriteIds)
+        }
         if (localCard != null) return localCard
 
         return runCatching {
-            remoteDataSource.api.getPokemon(cardId).toDomain(isFavorite = false)
+            remoteDataSource.api.getPokemon(cardId).toDomain(isFavorite = cardId in favoriteIds)
         }.getOrNull()
     }
 }

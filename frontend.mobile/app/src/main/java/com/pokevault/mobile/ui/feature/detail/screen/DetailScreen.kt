@@ -12,6 +12,8 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +29,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pokevault.mobile.domain.model.PokemonCard
 import com.pokevault.mobile.ui.feature.components.CardArt
 import com.pokevault.mobile.ui.feature.components.money
+import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailEffect
 import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
@@ -38,9 +44,29 @@ import com.pokevault.mobile.ui.theme.Muted
 @Composable
 fun DetailScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    onOpenLogin: () -> Unit,
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                DetailEffect.NavigateToLogin -> onOpenLogin()
+            }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Box(
         modifier = Modifier

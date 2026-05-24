@@ -54,6 +54,9 @@ object DataModule {
     fun providePokemonDao(database: PokeMarketDatabase) = database.pokemonDao()
 
     @Provides
+    fun provideOrderDao(database: PokeMarketDatabase) = database.orderDao()
+
+    @Provides
     @Singleton
     fun provideMoshi(): Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 

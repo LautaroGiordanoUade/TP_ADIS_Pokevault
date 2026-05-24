@@ -14,8 +14,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,7 +35,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
 import com.pokevault.mobile.ui.feature.home.state.HomeEffect
 import com.pokevault.mobile.ui.feature.home.state.HomeEvent
@@ -47,25 +51,37 @@ import com.pokevault.mobile.ui.theme.Muted
 fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onOpenSearch: () -> Unit,
+    onOpenLogin: () -> Unit,
     onCardClick: (Int) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is HomeEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                HomeEffect.NavigateToLogin -> onOpenLogin()
             }
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onEvent(HomeEvent.OnRefresh)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     HomeContent(
         state = state,
         snackbarHostState = snackbarHostState,
         contentPadding = contentPadding,
-        onOpenSearch = onOpenSearch,
         onCardClick = onCardClick,
         onEvent = viewModel::onEvent,
     )
@@ -76,7 +92,6 @@ fun HomeContent(
     state: HomeUiState,
     snackbarHostState: SnackbarHostState,
     contentPadding: PaddingValues,
-    onOpenSearch: () -> Unit,
     onCardClick: (Int) -> Unit,
     onEvent: (HomeEvent) -> Unit,
 ) {
@@ -109,21 +124,19 @@ fun HomeContent(
             singleLine = true,
             shape = RoundedCornerShape(8.dp),
         )
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("All Cards", "VMAX / Secret", "Vintage 1999", "Promo").forEach { label ->
-                AssistChip(onClick = onOpenSearch, label = { Text(label) })
-            }
-        }
         Spacer(Modifier.height(16.dp))
         Row {
-            Text("COLECCION", style = MaterialTheme.typography.labelSmall)
+            Text(state.title, style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.weight(1f))
-            Text("Tus joyas de coleccion", color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(state.subtitle, color = Muted, style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(10.dp))
         if (state.isLoading && state.cards.isEmpty()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = MarketOrange)
+        } else if (state.isLoggedIn && state.favorites.isEmpty()) {
+            EmptyFavorites(modifier = Modifier.weight(1f))
+        } else if (state.cards.isEmpty()) {
+            EmptySearchResults(modifier = Modifier.weight(1f))
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -146,5 +159,33 @@ fun HomeContent(
             }
         }
         SnackbarHost(snackbarHostState)
+    }
+}
+
+@Composable
+private fun EmptySearchResults(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(Icons.Outlined.Search, contentDescription = null, tint = Muted)
+        Spacer(Modifier.height(10.dp))
+        Text("NO SE ENCONTRARON CARTAS", style = MaterialTheme.typography.labelSmall)
+        Text("Proba buscar por nombre, rareza, set o artista.", color = Muted)
+    }
+}
+
+@Composable
+private fun EmptyFavorites(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = Muted)
+        Spacer(Modifier.height(10.dp))
+        Text("TODAVIA NO TENES FAVORITOS", style = MaterialTheme.typography.labelSmall)
+        Text("Marca cartas con el corazon para verlas aca.", color = Muted)
     }
 }

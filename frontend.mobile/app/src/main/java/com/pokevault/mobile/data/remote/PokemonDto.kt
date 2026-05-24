@@ -93,6 +93,7 @@ data class OrderDto(
     @Json(name = "userId") val userId: Int,
     @Json(name = "deliveryAddress") val deliveryAddress: String,
     @Json(name = "paymentMethod") val paymentMethod: String,
+    @Json(name = "statusId") val statusId: Int,
     val status: String,
     val subtotal: Double,
     val shipping: Double,

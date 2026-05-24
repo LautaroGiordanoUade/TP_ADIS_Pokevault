@@ -23,4 +23,5 @@ sealed interface HomeEvent {
 
 sealed interface HomeEffect {
     data class ShowSnackbar(val message: String) : HomeEffect
+    data object NavigateToLogin : HomeEffect
 }

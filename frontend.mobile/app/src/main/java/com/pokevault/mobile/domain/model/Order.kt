@@ -5,6 +5,7 @@ data class Order(
     val title: String,
     val quantity: Int,
     val amount: Double,
+    val statusId: Int,
     val status: OrderStatus,
     val paymentMethod: String,
     val total: Double,

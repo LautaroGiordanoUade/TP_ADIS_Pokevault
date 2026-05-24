@@ -2,6 +2,7 @@ package com.pokevault.mobile.ui.feature.profile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pokevault.mobile.data.repository.CartRepository
 import com.pokevault.mobile.data.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEffect
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEvent
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val cartRepository: CartRepository,
 ) : ViewModel() {
     private val screenState = MutableStateFlow(ProfileUiState())
     private val _effects = Channel<ProfileEffect>(Channel.BUFFERED)
@@ -35,6 +37,7 @@ class ProfileViewModel @Inject constructor(
 
     fun onEvent(event: ProfileEvent) {
         when (event) {
+            ProfileEvent.OnRefresh -> refresh()
             ProfileEvent.OnGoogleLoginClick -> viewModelScope.launch {
                 screenState.update { it.copy(isLoading = true, errorMessage = null) }
                 _effects.send(ProfileEffect.RequestGoogleSignIn)
@@ -48,6 +51,7 @@ class ProfileViewModel @Inject constructor(
             }
             ProfileEvent.OnLogoutClick -> viewModelScope.launch {
                 profileRepository.logout()
+                cartRepository.clear()
                 screenState.value = ProfileUiState()
                 _effects.send(ProfileEffect.ClearGoogleCredentialState)
             }
@@ -78,11 +82,16 @@ class ProfileViewModel @Inject constructor(
 
     private fun refresh() {
         viewModelScope.launch {
+            screenState.update { it.copy(errorMessage = null) }
             runCatching {
                 profileRepository.refreshProfile()
                 profileRepository.getOrders()
             }.onSuccess { orders ->
                 screenState.update { it.copy(orders = orders) }
+            }.onFailure { error ->
+                screenState.update {
+                    it.copy(errorMessage = error.message ?: "No se pudo actualizar el historial")
+                }
             }
         }
     }

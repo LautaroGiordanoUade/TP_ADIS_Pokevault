@@ -35,6 +35,7 @@ class OrderRead(BaseModel):
     user_id: int = Field(alias="userId")
     delivery_address: str = Field(alias="deliveryAddress")
     payment_method: str = Field(alias="paymentMethod")
+    status_id: int = Field(alias="statusId")
     status: str
     subtotal: float
     shipping: float
