@@ -19,10 +19,10 @@ class AuthService:
         try:
             from google.auth.transport import requests
             from google.oauth2 import id_token
-        except ModuleNotFoundError as exc:
+        except (ImportError, ModuleNotFoundError) as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="google-auth dependency is not installed.",
+                detail="google-auth requests transport dependency is not installed.",
             ) from exc
 
         try:
@@ -36,6 +36,19 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid Google ID token.",
             ) from exc
+        except Exception as exc:
+            module = exc.__class__.__module__
+            if module.startswith("google.auth.transport"):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Could not reach Google to verify the ID token.",
+                ) from exc
+            if module.startswith("google.auth"):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid Google ID token.",
+                ) from exc
+            raise
 
         email = payload.get("email")
         google_sub = payload.get("sub")

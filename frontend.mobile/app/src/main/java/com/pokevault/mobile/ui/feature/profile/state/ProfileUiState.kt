@@ -14,11 +14,13 @@ sealed interface ProfileEvent {
     data object OnGoogleLoginClick : ProfileEvent
     data class OnGoogleIdTokenReceived(val idToken: String) : ProfileEvent
     data class OnLoginFailed(val message: String) : ProfileEvent
+    data object OnLoginCanceled : ProfileEvent
     data object OnLogoutClick : ProfileEvent
     data class OnPickupClick(val orderId: Int) : ProfileEvent
 }
 
 sealed interface ProfileEffect {
     data object RequestGoogleSignIn : ProfileEffect
+    data object ClearGoogleCredentialState : ProfileEffect
     data object NavigateToPickup : ProfileEffect
 }
