@@ -10,6 +10,10 @@ from models.user import User
 from repositories.mysql_pokemon_repository import _parse_datetime, _parse_json_list
 
 
+class InsufficientStockError(ValueError):
+    pass
+
+
 def _float(value) -> float:
     if isinstance(value, Decimal):
         return float(value)
@@ -142,10 +146,13 @@ class MySQLUserRepository:
             with conn.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT *
+                    SELECT
+                        orders.*,
+                        order_statuses.code AS status
                     FROM orders
-                    WHERE user_id = %s
-                    ORDER BY created_at DESC
+                    INNER JOIN order_statuses ON order_statuses.id = orders.status_id
+                    WHERE orders.user_id = %s
+                    ORDER BY orders.created_at DESC
                     """,
                     (user_id,),
                 )
@@ -192,67 +199,95 @@ class MySQLUserRepository:
     ) -> Order:
         self._ensure_initialized()
         with connection() as conn:
-            with conn.cursor() as cursor:
-                pokemon_ids = [item[0] for item in items]
-                placeholders = ",".join(["%s"] * len(pokemon_ids))
-                cursor.execute(
-                    f"""
-                    SELECT pokemon_cards.id, pokemon_cards.price, inventory.quantity
-                    FROM pokemon_cards
-                    INNER JOIN inventory ON inventory.pokemon_id = pokemon_cards.id
-                    WHERE pokemon_cards.id IN ({placeholders})
-                    """,
-                    pokemon_ids,
-                )
-                stock_rows = {row["id"]: row for row in cursor.fetchall()}
-                missing_ids = [pokemon_id for pokemon_id in pokemon_ids if pokemon_id not in stock_rows]
-                if missing_ids:
-                    raise ValueError(f"Pokemon card not found: {missing_ids[0]}")
-                for pokemon_id, quantity in items:
-                    if int(stock_rows[pokemon_id]["quantity"]) < quantity:
-                        raise ValueError(f"Not enough inventory for pokemon card: {pokemon_id}")
+            conn.autocommit(False)
+            try:
+                with conn.cursor() as cursor:
+                    grouped_items: dict[int, int] = {}
+                    for pokemon_id, quantity in items:
+                        grouped_items[pokemon_id] = grouped_items.get(pokemon_id, 0) + quantity
 
-                prices = {pokemon_id: _float(row["price"]) for pokemon_id, row in stock_rows.items()}
-                subtotal = sum(prices[pokemon_id] * quantity for pokemon_id, quantity in items)
-                shipping = 0.0
-                total = subtotal + shipping
-                cursor.execute(
-                    """
-                    INSERT INTO orders (
-                        user_id, delivery_address, payment_method,
-                        status, subtotal, shipping, total
+                    pokemon_ids = list(grouped_items.keys())
+                    if not pokemon_ids:
+                        raise ValueError("Order must include at least one pokemon card")
+
+                    placeholders = ",".join(["%s"] * len(pokemon_ids))
+                    cursor.execute(
+                        f"""
+                        SELECT
+                            pokemon_cards.id,
+                            pokemon_cards.name,
+                            pokemon_cards.price,
+                            COALESCE(inventory.quantity, 0) AS quantity
+                        FROM pokemon_cards
+                        LEFT JOIN inventory ON inventory.pokemon_id = pokemon_cards.id
+                        WHERE pokemon_cards.id IN ({placeholders})
+                        FOR UPDATE
+                        """,
+                        pokemon_ids,
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        user_id,
-                        delivery_address,
-                        payment_method,
-                        "ready_for_pickup",
-                        subtotal,
-                        shipping,
-                        total,
-                    ),
-                )
-                order_id = cursor.lastrowid
-                for pokemon_id, quantity in items:
+                    stock_rows = {row["id"]: row for row in cursor.fetchall()}
+                    missing_ids = [pokemon_id for pokemon_id in pokemon_ids if pokemon_id not in stock_rows]
+                    if missing_ids:
+                        raise ValueError(f"Pokemon card not found: {missing_ids[0]}")
+                    for pokemon_id, quantity in grouped_items.items():
+                        available = int(stock_rows[pokemon_id]["quantity"])
+                        if available < quantity:
+                            card_name = stock_rows[pokemon_id]["name"]
+                            raise InsufficientStockError(
+                                f"No hay stock suficiente de {card_name}. Disponible: {available}."
+                            )
+
+                    prices = {pokemon_id: _float(row["price"]) for pokemon_id, row in stock_rows.items()}
+                    subtotal = sum(prices[pokemon_id] * quantity for pokemon_id, quantity in grouped_items.items())
+                    shipping = 0.0
+                    total = subtotal + shipping
                     cursor.execute(
                         """
-                        INSERT INTO order_items (
-                            order_id, pokemon_id, quantity, unit_price
+                        INSERT INTO orders (
+                            user_id, delivery_address, payment_method,
+                            status_id, subtotal, shipping, total
                         )
-                        VALUES (%s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                         """,
-                        (order_id, pokemon_id, quantity, prices[pokemon_id]),
+                        (
+                            user_id,
+                            delivery_address,
+                            payment_method,
+                            1,
+                            subtotal,
+                            shipping,
+                            total,
+                        ),
                     )
-                    cursor.execute(
-                        """
-                        UPDATE inventory
-                        SET quantity = quantity - %s
-                        WHERE pokemon_id = %s
-                        """,
-                        (quantity, pokemon_id),
-                    )
+                    order_id = cursor.lastrowid
+                    for pokemon_id, quantity in grouped_items.items():
+                        cursor.execute(
+                            """
+                            INSERT INTO order_items (
+                                order_id, pokemon_id, quantity, unit_price
+                            )
+                            VALUES (%s, %s, %s, %s)
+                            """,
+                            (order_id, pokemon_id, quantity, prices[pokemon_id]),
+                        )
+                        cursor.execute(
+                            """
+                            UPDATE inventory
+                            SET quantity = quantity - %s
+                            WHERE pokemon_id = %s AND quantity >= %s
+                            """,
+                            (quantity, pokemon_id, quantity),
+                        )
+                        if cursor.rowcount != 1:
+                            raise InsufficientStockError(
+                                f"No hay stock suficiente de {stock_rows[pokemon_id]['name']}."
+                            )
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.autocommit(True)
         orders = await self.list_orders(user_id)
         return next(order for order in orders if order.id == order_id)
 
@@ -262,6 +297,7 @@ class MySQLUserRepository:
             user_id=order_row["user_id"],
             delivery_address=order_row["delivery_address"],
             payment_method=order_row["payment_method"],
+            status_id=order_row["status_id"],
             status=order_row["status"],
             subtotal=_float(order_row["subtotal"]),
             shipping=_float(order_row["shipping"]),

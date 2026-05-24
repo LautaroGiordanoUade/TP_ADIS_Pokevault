@@ -156,12 +156,32 @@ def init_db() -> None:
             )
             cursor.execute(
                 """
+                CREATE TABLE IF NOT EXISTS order_statuses (
+                    id INT PRIMARY KEY,
+                    code VARCHAR(32) NOT NULL UNIQUE,
+                    name VARCHAR(64) NOT NULL
+                )
+                """
+            )
+            cursor.execute(
+                """
+                INSERT INTO order_statuses (id, code, name)
+                VALUES
+                    (1, 'ready_for_pickup', 'Ready for pickup'),
+                    (2, 'delivered', 'Delivered')
+                ON DUPLICATE KEY UPDATE
+                    code = VALUES(code),
+                    name = VALUES(name)
+                """
+            )
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS orders (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     user_id INT NOT NULL,
                     delivery_address TEXT NOT NULL,
                     payment_method VARCHAR(64) NOT NULL DEFAULT 'Google Pay',
-                    status VARCHAR(32) NOT NULL DEFAULT 'ready_for_pickup',
+                    status_id INT NOT NULL DEFAULT 1,
                     subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
                     shipping DECIMAL(10, 2) NOT NULL DEFAULT 0,
                     total DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -172,10 +192,14 @@ def init_db() -> None:
                     CONSTRAINT fk_orders_user
                         FOREIGN KEY (user_id)
                         REFERENCES users(id)
-                        ON DELETE CASCADE
+                        ON DELETE CASCADE,
+                    CONSTRAINT fk_orders_status
+                        FOREIGN KEY (status_id)
+                        REFERENCES order_statuses(id)
                 )
                 """
             )
+            _migrate_order_statuses(cursor)
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS order_items (
@@ -195,3 +219,60 @@ def init_db() -> None:
                 )
                 """
             )
+
+
+def _column_exists(cursor: DictCursor, table_name: str, column_name: str) -> bool:
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+          AND TABLE_NAME = %s
+          AND COLUMN_NAME = %s
+        """,
+        (settings.mysql_database, table_name, column_name),
+    )
+    return int(cursor.fetchone()["total"]) > 0
+
+
+def _constraint_exists(cursor: DictCursor, table_name: str, constraint_name: str) -> bool:
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM information_schema.TABLE_CONSTRAINTS
+        WHERE TABLE_SCHEMA = %s
+          AND TABLE_NAME = %s
+          AND CONSTRAINT_NAME = %s
+        """,
+        (settings.mysql_database, table_name, constraint_name),
+    )
+    return int(cursor.fetchone()["total"]) > 0
+
+
+def _migrate_order_statuses(cursor: DictCursor) -> None:
+    if not _column_exists(cursor, "orders", "status_id"):
+        cursor.execute("ALTER TABLE orders ADD COLUMN status_id INT NOT NULL DEFAULT 1 AFTER payment_method")
+
+    if _column_exists(cursor, "orders", "status"):
+        cursor.execute(
+            """
+            UPDATE orders
+            LEFT JOIN order_statuses ON order_statuses.code = orders.status
+            SET orders.status_id = CASE
+                WHEN orders.status IN ('delivered', 'deliver') THEN 2
+                ELSE COALESCE(order_statuses.id, 1)
+            END
+            WHERE orders.status_id IS NULL OR orders.status_id = 1
+            """
+        )
+        cursor.execute("ALTER TABLE orders DROP COLUMN status")
+
+    if not _constraint_exists(cursor, "orders", "fk_orders_status"):
+        cursor.execute(
+            """
+            ALTER TABLE orders
+            ADD CONSTRAINT fk_orders_status
+            FOREIGN KEY (status_id)
+            REFERENCES order_statuses(id)
+            """
+        )

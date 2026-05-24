@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -37,8 +38,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
+import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
 import com.pokevault.mobile.ui.feature.search.state.SearchUiState
 import com.pokevault.mobile.ui.feature.search.viewmodel.SearchViewModel
@@ -49,9 +54,30 @@ import com.pokevault.mobile.ui.theme.Muted
 fun SearchScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onCardClick: (Int) -> Unit,
+    onOpenLogin: () -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                SearchEffect.NavigateToLogin -> onOpenLogin()
+            }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onEvent(SearchEvent.OnRefresh)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     SearchContent(
         state = state,
         contentPadding = contentPadding,

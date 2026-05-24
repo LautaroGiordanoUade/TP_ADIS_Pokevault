@@ -1,7 +1,9 @@
 package com.pokevault.mobile.data.repository
 
 import com.pokevault.mobile.data.local.PreferencesDataSource
+import com.pokevault.mobile.data.local.OrderLocalDataSource
 import com.pokevault.mobile.data.mapper.toDomain
+import com.pokevault.mobile.data.mapper.toEntity
 import com.pokevault.mobile.data.remote.AuthApi
 import com.pokevault.mobile.data.remote.GoogleLoginRequestDto
 import com.pokevault.mobile.data.remote.OrderApi
@@ -23,6 +25,7 @@ interface ProfileRepository {
 @Singleton
 class DefaultProfileRepository @Inject constructor(
     private val preferencesDataSource: PreferencesDataSource,
+    private val orderLocalDataSource: OrderLocalDataSource,
     private val authApi: AuthApi,
     private val orderApi: OrderApi,
 ) : ProfileRepository {
@@ -46,5 +49,15 @@ class DefaultProfileRepository @Inject constructor(
         preferencesDataSource.saveSession(token, authApi.me().toDomain())
     }
 
-    override suspend fun getOrders(): List<Order> = orderApi.myOrders().map { it.toDomain() }
+    override suspend fun getOrders(): List<Order> {
+        val userId = preferencesDataSource.profile.first()?.id ?: return emptyList()
+        val cachedOrders = orderLocalDataSource.getOrders(userId).map { it.toDomain() }
+        return runCatching {
+            val remoteOrders = orderApi.myOrders()
+            orderLocalDataSource.replaceOrders(userId, remoteOrders.map { it.toEntity() })
+            remoteOrders.map { it.toDomain() }
+        }.getOrElse {
+            cachedOrders
+        }
+    }
 }

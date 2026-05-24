@@ -28,7 +28,8 @@ import com.pokevault.mobile.domain.model.PokemonCard
 fun CardArt(
     card: PokemonCard,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Fit
+    contentScale: ContentScale = ContentScale.Fit,
+    showBadge: Boolean = true,
 ) {
     Box(
         modifier = modifier
@@ -60,22 +61,23 @@ fun CardArt(
             }
         )
 
-        // Etiqueta PSA elegante
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(10.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.Black.copy(alpha = 0.8f))
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = if (card.rarity?.contains("PSA", ignoreCase = true) == true) card.rarity else "PSA 10",
-                color = Color.White,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 0.5.sp
-            )
+        if (showBadge) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = if (card.rarity?.contains("PSA", ignoreCase = true) == true) card.rarity else "PSA 10",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 0.5.sp
+                )
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ data class ProfileUiState(
 )
 
 sealed interface ProfileEvent {
+    data object OnRefresh : ProfileEvent
     data object OnGoogleLoginClick : ProfileEvent
     data class OnGoogleIdTokenReceived(val idToken: String) : ProfileEvent
     data class OnLoginFailed(val message: String) : ProfileEvent

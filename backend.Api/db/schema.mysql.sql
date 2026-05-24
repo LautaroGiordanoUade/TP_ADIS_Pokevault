@@ -78,12 +78,26 @@ CREATE TABLE IF NOT EXISTS vault_items (
         ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS order_statuses (
+    id INT PRIMARY KEY,
+    code VARCHAR(32) NOT NULL UNIQUE,
+    name VARCHAR(64) NOT NULL
+);
+
+INSERT INTO order_statuses (id, code, name)
+VALUES
+    (1, 'ready_for_pickup', 'Ready for pickup'),
+    (2, 'delivered', 'Delivered')
+ON DUPLICATE KEY UPDATE
+    code = VALUES(code),
+    name = VALUES(name);
+
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     delivery_address TEXT NOT NULL,
     payment_method VARCHAR(64) NOT NULL DEFAULT 'Google Pay',
-    status VARCHAR(32) NOT NULL DEFAULT 'ready_for_pickup',
+    status_id INT NOT NULL DEFAULT 1,
     subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
     shipping DECIMAL(10, 2) NOT NULL DEFAULT 0,
     total DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -93,7 +107,10 @@ CREATE TABLE IF NOT EXISTS orders (
     CONSTRAINT fk_orders_user
         FOREIGN KEY (user_id)
         REFERENCES users(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_orders_status
+        FOREIGN KEY (status_id)
+        REFERENCES order_statuses(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (

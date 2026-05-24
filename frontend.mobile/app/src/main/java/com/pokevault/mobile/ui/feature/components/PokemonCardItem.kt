@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -77,6 +78,13 @@ fun PokemonCardItem(
                         imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorito",
                         tint = if (card.isFavorite) Color(0xFFFF2F68) else Muted,
+                    )
+                }
+                IconButton(onClick = { onAddToCart(card) }, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.ShoppingBag,
+                        contentDescription = "Agregar al carrito",
+                        tint = MarketOrange,
                     )
                 }
                 OutlinedButton(

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pokevault.mobile.domain.model.CartItem
@@ -109,11 +111,30 @@ private fun CartItemRow(
     onRemove: () -> Unit,
 ) {
     OutlinedCard(border = BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp)) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            CardArt(item.card, Modifier.size(58.dp))
-            Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                Text(item.card.name, fontWeight = FontWeight.ExtraBold, maxLines = 1)
-                Text("PSA - Por ${item.card.artist ?: "Pallet"}", style = MaterialTheme.typography.labelSmall)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CardArt(
+                card = item.card,
+                modifier = Modifier.width(56.dp).height(78.dp),
+                showBadge = false,
+            )
+            Column(
+                modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    item.card.name,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "Precio unitario: ${item.card.price.money()}",
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall,
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onDecrement, modifier = Modifier.size(32.dp)) { Icon(Icons.Outlined.Remove, null) }
                     Text(item.quantity.toString(), fontWeight = FontWeight.Bold)
@@ -121,6 +142,7 @@ private fun CartItemRow(
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
+                Text("Total", color = Muted, style = MaterialTheme.typography.labelSmall)
                 Text((item.card.price * item.quantity).money(), fontWeight = FontWeight.ExtraBold)
                 IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = "Eliminar", tint = Muted) }
             }

@@ -1,6 +1,7 @@
 package com.pokevault.mobile.data.mapper
 
 import com.pokevault.mobile.data.local.PokemonEntity
+import com.pokevault.mobile.data.local.OrderEntity
 import com.pokevault.mobile.data.remote.OrderDto
 import com.pokevault.mobile.data.remote.PokemonDto
 import com.pokevault.mobile.data.remote.UserDto
@@ -97,8 +98,36 @@ fun OrderDto.toDomain(): Order {
         title = title,
         quantity = quantity,
         amount = amount,
-        status = if (status == "delivered") OrderStatus.Delivered else OrderStatus.ReadyForPickup,
+        statusId = statusId,
+        status = if (statusId == 2 || status == "delivered") OrderStatus.Delivered else OrderStatus.ReadyForPickup,
         paymentMethod = paymentMethod,
         total = total,
     )
 }
+
+fun OrderDto.toEntity(): OrderEntity {
+    val order = toDomain()
+    return OrderEntity(
+        id = id,
+        userId = userId,
+        title = order.title,
+        quantity = order.quantity,
+        amount = order.amount,
+        statusId = statusId,
+        status = if (order.status == OrderStatus.Delivered) "delivered" else "ready_for_pickup",
+        paymentMethod = order.paymentMethod,
+        total = order.total,
+    )
+}
+
+fun OrderEntity.toDomain(): Order =
+    Order(
+        id = id,
+        title = title,
+        quantity = quantity,
+        amount = amount,
+        statusId = statusId,
+        status = if (statusId == 2 || status == "delivered") OrderStatus.Delivered else OrderStatus.ReadyForPickup,
+        paymentMethod = paymentMethod,
+        total = total,
+    )

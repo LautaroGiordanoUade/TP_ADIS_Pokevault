@@ -14,9 +14,14 @@ data class SearchUiState(
 )
 
 sealed interface SearchEvent {
+    data object OnRefresh : SearchEvent
     data class OnQueryChange(val query: String) : SearchEvent
     data object OnToggleFilters : SearchEvent
     data class OnFavoriteClick(val card: PokemonCard) : SearchEvent
     data class OnAddToCart(val card: PokemonCard) : SearchEvent
     data object LoadNextPage : SearchEvent
+}
+
+sealed interface SearchEffect {
+    data object NavigateToLogin : SearchEffect
 }
