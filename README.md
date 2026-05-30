@@ -47,6 +47,12 @@ API_TARGET=local
 API_BASE_URL=
 ```
 
+La API local corre en:
+
+```text
+http://127.0.0.1:8000
+```
+
 Luego levantar el backend local:
 
 ```bash
@@ -54,7 +60,7 @@ cd backend.Api
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Con esa config, el emulador Android usa esta URL:
+Con esa config, el emulador Android apunta a esta URL de API:
 
 ```text
 http://10.0.2.2:8000/api/
@@ -77,7 +83,13 @@ API_TARGET=server
 API_BASE_URL=
 ```
 
-Con esa config, la app usa esta URL:
+La API deployada corre en:
+
+```text
+https://pokevaultapi-izqk2xgb.b4a.run
+```
+
+Con esa config, la app apunta a esta URL de API:
 
 ```text
 https://pokevaultapi-izqk2xgb.b4a.run/api/
@@ -113,5 +125,5 @@ frontend.mobile/local.properties
 Ejemplo:
 
 ```properties
-GOOGLE_WEB_CLIENT_ID=362499068237-sslu5ih83fa3lkms4bfhke3oq9trp2f5.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 ```
