@@ -40,7 +40,7 @@ frontend.mobile/api.properties
 
 ### Usar backend local
 
-Dejar:
+Para usar la API local que corre en tu PC, pegar esto en `frontend.mobile/api.properties`:
 
 ```properties
 API_TARGET=local
@@ -54,30 +54,46 @@ cd backend.Api
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-En emulador Android, la app usa:
+Con esa config, el emulador Android usa esta URL:
 
 ```text
 http://10.0.2.2:8000/api/
 ```
 
+Endpoints locales utiles para probar en el navegador:
+
+```text
+http://127.0.0.1:8000/health
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/api/pokemon?page=1&pageSize=10
+```
+
 ### Usar servidor deployado
 
-Cambiar:
+Para usar la API deployada en Back4app, pegar esto en `frontend.mobile/api.properties`:
 
 ```properties
 API_TARGET=server
 API_BASE_URL=
 ```
 
-La app usa:
+Con esa config, la app usa esta URL:
 
 ```text
 https://pokevaultapi-izqk2xgb.b4a.run/api/
 ```
 
+Endpoints del servidor para probar en el navegador:
+
+```text
+https://pokevaultapi-izqk2xgb.b4a.run/health
+https://pokevaultapi-izqk2xgb.b4a.run/docs
+https://pokevaultapi-izqk2xgb.b4a.run/api/pokemon?page=1&pageSize=10
+```
+
 ### Usar una URL manual
 
-Si necesitás apuntar a otra API, usar:
+Si necesitas apuntar a otra API, pegar una URL completa con `/api/` al final:
 
 ```properties
 API_TARGET=local
@@ -88,7 +104,7 @@ API_BASE_URL=https://otra-api.example.com/api/
 
 ### Google Sign-In
 
-El `GOOGLE_WEB_CLIENT_ID` sigue configurándose en:
+El `GOOGLE_WEB_CLIENT_ID` sigue configurandose en:
 
 ```text
 frontend.mobile/local.properties
