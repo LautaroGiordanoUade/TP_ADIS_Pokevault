@@ -86,21 +86,21 @@ API_BASE_URL=
 La API deployada corre en:
 
 ```text
-https://pokevaultapi-izqk2xgb.b4a.run
+https://pokevaultapi-we8cuobk.b4a.run
 ```
 
 Con esa config, la app apunta a esta URL de API:
 
 ```text
-https://pokevaultapi-izqk2xgb.b4a.run/api/
+https://pokevaultapi-we8cuobk.b4a.run/api/
 ```
 
 Endpoints del servidor para probar en el navegador:
 
 ```text
-https://pokevaultapi-izqk2xgb.b4a.run/health
-https://pokevaultapi-izqk2xgb.b4a.run/docs
-https://pokevaultapi-izqk2xgb.b4a.run/api/pokemon?page=1&pageSize=10
+https://pokevaultapi-we8cuobk.b4a.run/health
+https://pokevaultapi-we8cuobk.b4a.run/docs
+https://pokevaultapi-we8cuobk.b4a.run/api/pokemon?page=1&pageSize=10
 ```
 
 ### Usar una URL manual
