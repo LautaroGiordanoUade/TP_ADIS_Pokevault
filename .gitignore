@@ -56,3 +56,4 @@ __pycache__/
 backend.Api/.pokevault_seeded
 backend.Api/db/*.key
 backend.Api/db/*.enc
+run_backend.bat
