@@ -15,6 +15,37 @@ val localProperties = Properties().apply {
     }
 }
 
+val apiProperties = Properties().apply {
+    val file = rootProject.file("api.properties")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
+fun ensureTrailingSlash(value: String): String =
+    if (value.endsWith("/")) value else "$value/"
+
+val apiTarget = (
+    localProperties.getProperty("API_TARGET")
+        ?: apiProperties.getProperty("API_TARGET")
+        ?: System.getenv("API_TARGET")
+        ?: "local"
+).trim().lowercase()
+
+val configuredApiBaseUrl = (
+    localProperties.getProperty("API_BASE_URL")
+        ?: apiProperties.getProperty("API_BASE_URL")
+        ?: System.getenv("API_BASE_URL")
+)?.trim()?.takeIf { it.isNotBlank() }
+
+val apiBaseUrl = ensureTrailingSlash(
+    configuredApiBaseUrl ?: when (apiTarget) {
+        "local", "current" -> "http://10.0.2.2:8000/api/"
+        "server", "deployed", "back4app" -> "https://pokevaultapi-izqk2xgb.b4a.run/api/"
+        else -> error("Unknown API_TARGET '$apiTarget'. Use local, current, server, deployed, or back4app.")
+    }
+)
+
 android {
     namespace = "com.pokevault.mobile"
     compileSdk = 35
@@ -26,7 +57,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000/api/\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
