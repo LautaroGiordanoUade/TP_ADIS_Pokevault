@@ -44,6 +44,7 @@ MYSQL_USER=<aiven-user>
 MYSQL_PASSWORD=<aiven-password>
 MYSQL_DATABASE=<aiven-database-name>
 MYSQL_SSL_MODE=REQUIRED
+SEED_POKEMON_ON_START=true
 BACKEND_CORS_ORIGINS=*
 GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id.apps.googleusercontent.com>
 ```
@@ -61,11 +62,9 @@ TCGGO_API_KEY=<optional-key>
 
 The API creates tables lazily when endpoints use the repositories, but Pokemon cards must be seeded once.
 
-Run this as a one-time command after the API can reach MySQL:
+Set `SEED_POKEMON_ON_START=true` for the first deploy. The API will insert Pokemon cards only when `pokemon_cards` is empty.
 
-```bash
-python scripts/seed_pokemon_cards.py
-```
+After data is loaded, set `SEED_POKEMON_ON_START=false` or remove the variable.
 
 Warning: the current seed script calls `recreate_db()`, which drops and recreates the database. Use it only for first-time setup or when intentionally resetting data.
 

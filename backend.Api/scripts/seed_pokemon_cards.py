@@ -251,10 +251,27 @@ def remove_old_local_seed() -> None:
             )
 
 
-async def main() -> None:
-    recreate_db()
+def has_pokemon_cards() -> bool:
+    try:
+        with connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) AS total FROM pokemon_cards")
+                return int(cursor.fetchone()["total"]) > 0
+    except Exception:
+        return False
+
+
+async def seed_pokemon_cards(reset_db: bool = False, skip_if_has_cards: bool = True) -> int:
+    if reset_db:
+        recreate_db()
+
+    if skip_if_has_cards and has_pokemon_cards():
+        print("Pokemon seed skipped because pokemon_cards already has rows")
+        return 0
+
     repository = MySQLPokemonRepository()
-    remove_old_local_seed()
+    if reset_db:
+        remove_old_local_seed()
 
     cards = load_from_poke_cards_file()
     if cards:
@@ -277,6 +294,11 @@ async def main() -> None:
 
     count = await repository.upsert_many(cards)
     print(f"Seeded {count} pokemon cards into MySQL database {settings.mysql_database}")
+    return count
+
+
+async def main() -> None:
+    await seed_pokemon_cards(reset_db=True, skip_if_has_cards=False)
 
 
 if __name__ == "__main__":

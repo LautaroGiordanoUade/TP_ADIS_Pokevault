@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     pokemon_tcg_api_key: str | None = None
     google_web_client_id: str | None = None
     session_token_ttl_hours: int = 720
+    seed_pokemon_on_start: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
