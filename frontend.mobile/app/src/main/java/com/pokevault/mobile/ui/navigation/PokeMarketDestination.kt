@@ -7,18 +7,19 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.pokevault.mobile.R
 
 sealed class PokeMarketDestination(
     val route: String,
-    val label: String,
+    val labelRes: Int,
     val icon: ImageVector? = null,
 ) {
-    data object Home : PokeMarketDestination("home", "Inicio", Icons.Outlined.Home)
-    data object Search : PokeMarketDestination("search", "Buscar", Icons.Outlined.Explore)
-    data object Cart : PokeMarketDestination("cart", "Carrito", Icons.Outlined.ShoppingBag)
-    data object Profile : PokeMarketDestination("profile", "Ingresar", Icons.Outlined.Person)
-    data object Pickup : PokeMarketDestination("pickup", "Retiro", Icons.Outlined.LocationOn)
-    data object Detail : PokeMarketDestination("detail/{cardId}", "Detalle") {
+    data object Home : PokeMarketDestination("home", R.string.nav_home, Icons.Outlined.Home)
+    data object Search : PokeMarketDestination("search", R.string.nav_search, Icons.Outlined.Explore)
+    data object Cart : PokeMarketDestination("cart", R.string.nav_cart, Icons.Outlined.ShoppingBag)
+    data object Profile : PokeMarketDestination("profile", R.string.nav_profile, Icons.Outlined.Person)
+    data object Pickup : PokeMarketDestination("pickup", R.string.nav_pickup, Icons.Outlined.LocationOn)
+    data object Detail : PokeMarketDestination("detail/{cardId}", R.string.nav_detail) {
         fun createRoute(cardId: Int) = "detail/$cardId"
     }
 }

@@ -6,6 +6,7 @@ from pymysql import MySQLError
 
 from api.routes import auth, health, orders, pokemon, users, vault
 from core.config import settings
+from scripts.seed_pokemon_cards import seed_pokemon_cards
 
 
 def create_app() -> FastAPI:
@@ -30,6 +31,11 @@ def create_app() -> FastAPI:
     app.include_router(users.router, prefix=settings.api_v1_prefix)
     app.include_router(vault.router, prefix=settings.api_v1_prefix)
     app.include_router(orders.router, prefix=settings.api_v1_prefix)
+
+    @app.on_event("startup")
+    async def seed_pokemon_on_startup() -> None:
+        if settings.seed_pokemon_on_start:
+            await seed_pokemon_cards(reset_db=False, skip_if_has_cards=True)
 
     @app.exception_handler(MySQLError)
     async def mysql_exception_handler(

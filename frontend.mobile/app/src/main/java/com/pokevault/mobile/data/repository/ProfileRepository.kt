@@ -9,18 +9,12 @@ import com.pokevault.mobile.data.remote.GoogleLoginRequestDto
 import com.pokevault.mobile.data.remote.OrderApi
 import com.pokevault.mobile.domain.model.Order
 import com.pokevault.mobile.domain.model.UserProfile
+import com.pokevault.mobile.domain.repository.ProfileRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-
-interface ProfileRepository {
-    val profile: Flow<UserProfile?>
-    suspend fun loginWithGoogle(idToken: String)
-    suspend fun logout()
-    suspend fun refreshProfile()
-    suspend fun getOrders(): List<Order>
-}
 
 @Singleton
 class DefaultProfileRepository @Inject constructor(
@@ -30,6 +24,7 @@ class DefaultProfileRepository @Inject constructor(
     private val orderApi: OrderApi,
 ) : ProfileRepository {
     override val profile: Flow<UserProfile?> = preferencesDataSource.profile
+    override val isLoggedIn: Flow<Boolean> = preferencesDataSource.session.map { it.isLoggedIn }
 
     override suspend fun loginWithGoogle(idToken: String) {
         val response = authApi.loginWithGoogle(GoogleLoginRequestDto(idToken))

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     mysql_password_key_file: str = "db/mysql_password.key"
     mysql_database: str = "pokevault"
     mysql_charset: str = "utf8mb4"
+    mysql_ssl_mode: str = "DISABLED"
     tcggo_api_base_url: str = "https://cardmarket-api-tcg.p.rapidapi.com"
     tcggo_api_key: str | None = None
     tcggo_game: str = "pokemon"
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
     pokemon_tcg_api_key: str | None = None
     google_web_client_id: str | None = None
     session_token_ttl_hours: int = 720
+    seed_pokemon_on_start: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

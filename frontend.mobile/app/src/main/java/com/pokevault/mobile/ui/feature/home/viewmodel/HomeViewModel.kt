@@ -2,10 +2,10 @@ package com.pokevault.mobile.ui.feature.home.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pokevault.mobile.data.local.PreferencesDataSource
-import com.pokevault.mobile.data.repository.CartRepository
-import com.pokevault.mobile.data.repository.PokemonRepository
 import com.pokevault.mobile.domain.model.PokemonCard
+import com.pokevault.mobile.domain.repository.CartRepository
+import com.pokevault.mobile.domain.repository.PokemonRepository
+import com.pokevault.mobile.domain.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.home.state.HomeEffect
 import com.pokevault.mobile.ui.feature.home.state.HomeEvent
 import com.pokevault.mobile.ui.feature.home.state.HomeUiState
@@ -27,29 +27,28 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository,
     private val cartRepository: CartRepository,
-    private val preferencesDataSource: PreferencesDataSource,
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
     private val content = MutableStateFlow(HomeUiState())
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
 
     val effects = _effects.receiveAsFlow()
 
-    val uiState = combine(content, preferencesDataSource.session) { state, session ->
-        val sourceCards = if (session.isLoggedIn) state.favorites else state.cards
+    val uiState = combine(content, profileRepository.isLoggedIn) { state, isLoggedIn ->
+        val sourceCards = if (isLoggedIn) state.favorites else state.cards
         val filteredCards = sourceCards.filterByQuery(state.query)
         state.copy(
             cards = filteredCards,
-            title = if (session.isLoggedIn) "COLECCION DE FAVORITOS (${filteredCards.size})" else "GENGAR DESTACADOS",
-            subtitle = if (session.isLoggedIn) "Tus joyas de coleccion" else "Inicia sesion para guardar favoritos",
-            isLoggedIn = session.isLoggedIn,
+            title = "", // Se computa dinámicamente en la vista (HomeScreen) para localización
+            subtitle = "", // Se computa dinámicamente en la vista (HomeScreen) para localización
+            isLoggedIn = isLoggedIn,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     init {
         refresh()
         viewModelScope.launch {
-            preferencesDataSource.session
-                .map { it.isLoggedIn }
+            profileRepository.isLoggedIn
                 .distinctUntilChanged()
                 .collect { isLoggedIn ->
                     if (!isLoggedIn) {
@@ -65,7 +64,7 @@ class HomeViewModel @Inject constructor(
             HomeEvent.OnRefresh -> refresh()
             is HomeEvent.OnQueryChange -> content.update { it.copy(query = event.query) }
             is HomeEvent.OnFavoriteClick -> viewModelScope.launch {
-                if (!preferencesDataSource.session.first().isLoggedIn) {
+                if (!profileRepository.isLoggedIn.first()) {
                     _effects.send(HomeEffect.NavigateToLogin)
                     return@launch
                 }

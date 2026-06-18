@@ -8,6 +8,12 @@ from pymysql.cursors import DictCursor
 from core.config import settings
 
 
+def _mysql_ssl() -> dict | None:
+    if settings.mysql_ssl_mode.upper() == "REQUIRED":
+        return {}
+    return None
+
+
 def _server_connection() -> Connection:
     return pymysql.connect(
         host=settings.mysql_host,
@@ -15,6 +21,7 @@ def _server_connection() -> Connection:
         user=settings.mysql_user,
         password=settings.mysql_password_value,
         charset=settings.mysql_charset,
+        ssl=_mysql_ssl(),
         cursorclass=DictCursor,
         autocommit=True,
     )
@@ -28,6 +35,7 @@ def get_connection() -> Connection:
         password=settings.mysql_password_value,
         database=settings.mysql_database,
         charset=settings.mysql_charset,
+        ssl=_mysql_ssl(),
         cursorclass=DictCursor,
         autocommit=True,
     )

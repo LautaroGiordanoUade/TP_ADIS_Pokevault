@@ -2,6 +2,7 @@ package com.pokevault.mobile.ui.feature.profile.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
-import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -30,16 +32,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
@@ -55,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.pokevault.mobile.BuildConfig
+import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.Order
 import com.pokevault.mobile.domain.model.OrderStatus
 import com.pokevault.mobile.ui.feature.components.money
@@ -163,9 +170,9 @@ private fun LoginContent(
             Text("P", fontWeight = FontWeight.ExtraBold)
         }
         Spacer(Modifier.height(14.dp))
-        Text("INGRESAR A POKEMARKET", fontWeight = FontWeight.ExtraBold)
+        Text(text = stringResource(R.string.profile_login_title), fontWeight = FontWeight.ExtraBold)
         Text(
-            "Continua con Google para guardar favoritos y ver tu historial de compras.",
+            text = stringResource(R.string.profile_login_subtitle),
             color = Muted,
             modifier = Modifier.padding(vertical = 10.dp),
         )
@@ -176,10 +183,21 @@ private fun LoginContent(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
-            Text(if (state.isLoading) "CONECTANDO..." else "CONTINUAR CON GOOGLE", fontWeight = FontWeight.ExtraBold)
+            Text(
+                text = if (state.isLoading) stringResource(R.string.profile_login_connecting) else stringResource(R.string.profile_login_continue), 
+                fontWeight = FontWeight.ExtraBold
+            )
         }
         state.errorMessage?.let { message ->
-            Text(message, color = Color(0xFFB00020), modifier = Modifier.padding(top = 12.dp))
+            val displayError = when (message) {
+                "Falta configurar GOOGLE_WEB_CLIENT_ID" -> stringResource(R.string.profile_login_error_missing_client_id)
+                "No hay cuentas de Google disponibles en este dispositivo" -> stringResource(R.string.profile_login_error_no_accounts)
+                "Google no devolvio un token valido" -> stringResource(R.string.profile_login_error_invalid_token)
+                "No se pudo iniciar sesion con Google" -> stringResource(R.string.profile_login_error_failed)
+                "No se pudo actualizar el historial" -> stringResource(R.string.profile_login_error_refresh_failed)
+                else -> message
+            }
+            Text(displayError, color = Color(0xFFB00020), modifier = Modifier.padding(top = 12.dp))
         }
     }
 }
@@ -216,7 +234,7 @@ private fun ProfileContent(
                     Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.AccountBalanceWallet, null, tint = MarketOrange)
                         Column(modifier = Modifier.padding(horizontal = 14.dp)) {
-                            Text("CUENTA:", color = Muted, style = MaterialTheme.typography.labelSmall)
+                            Text(text = stringResource(R.string.profile_account_title), color = Muted, style = MaterialTheme.typography.labelSmall)
                             Text("Google", fontWeight = FontWeight.ExtraBold)
                         }
                         Text("VIP", color = MarketOrange, style = MaterialTheme.typography.labelSmall)
@@ -224,17 +242,138 @@ private fun ProfileContent(
                 }
             }
         }
-        item { Text("HISTORIAL DE COMPRAS (${state.orders.size})", style = MaterialTheme.typography.labelSmall) }
+
+        item {
+            var showLanguageDialog by remember { mutableStateOf(false) }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.profile_settings_title),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Muted
+                )
+                
+                OutlinedCard(
+                    border = BorderStroke(1.dp, Color.Black),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showLanguageDialog = true }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.profile_language_label),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (state.currentLanguage == "es") "Español" else "English",
+                                color = Muted,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.Black
+                        )
+                    }
+                }
+            }
+
+            if (showLanguageDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLanguageDialog = false },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.profile_language_dialog_title),
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onEvent(ProfileEvent.OnLanguageChanged("es"))
+                                        showLanguageDialog = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.profile_language_spanish),
+                                    fontWeight = if (state.currentLanguage == "es") FontWeight.ExtraBold else FontWeight.Normal,
+                                    color = if (state.currentLanguage == "es") MarketOrange else Color.Unspecified,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (state.currentLanguage == "es") {
+                                    Text("✓", color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                                }
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onEvent(ProfileEvent.OnLanguageChanged("en"))
+                                        showLanguageDialog = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.profile_language_english),
+                                    fontWeight = if (state.currentLanguage == "en") FontWeight.ExtraBold else FontWeight.Normal,
+                                    color = if (state.currentLanguage == "en") MarketOrange else Color.Unspecified,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (state.currentLanguage == "en") {
+                                    Text("✓", color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { showLanguageDialog = false }) {
+                            Text(
+                                text = stringResource(R.string.profile_language_cancel),
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    },
+                    containerColor = Color.White,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        }
+
+        item { 
+            Text(
+                text = stringResource(R.string.profile_purchase_history, state.orders.size), 
+                style = MaterialTheme.typography.labelSmall
+            ) 
+        }
+
         items(state.orders, key = { it.id }) { order ->
             OrderCard(order = order, onPickupClick = { onEvent(ProfileEvent.OnPickupClick(order.id)) })
         }
+
         item {
             OutlinedButton(
                 onClick = { onEvent(ProfileEvent.OnLogoutClick) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
             ) {
-                Text("CERRAR SESION", fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.profile_logout), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -246,11 +385,15 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             val isDelivered = order.statusId == 2 || order.status == OrderStatus.Delivered
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("ORDEN #${order.id}", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = stringResource(R.string.profile_order_number, order.id), 
+                    fontWeight = FontWeight.ExtraBold, 
+                    style = MaterialTheme.typography.labelSmall
+                )
                 if (!isDelivered) {
                     Spacer(Modifier.weight(1f))
                     Text(
-                        "PARA RETIRAR",
+                        text = stringResource(R.string.profile_to_pickup),
                         color = MarketOrange,
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.labelSmall,
@@ -265,17 +408,29 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
             if (!isDelivered) {
                 Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3DE)), border = BorderStroke(1.dp, MarketOrange)) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("LISTO PARA RETIRAR!\nSucursal: UADE (Lima 757, CABA)", color = MarketOrange, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text(
+                            text = stringResource(R.string.profile_ready_to_pickup), 
+                            color = MarketOrange, 
+                            fontWeight = FontWeight.Bold, 
+                            modifier = Modifier.weight(1f)
+                        )
                         OutlinedButton(onClick = onPickupClick) {
-                            Text("VER MAPA", style = MaterialTheme.typography.labelSmall)
-                            Icon(Icons.Outlined.ArrowForward, null, modifier = Modifier.size(14.dp))
+                            Text(text = stringResource(R.string.profile_view_map), style = MaterialTheme.typography.labelSmall)
+                            Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, modifier = Modifier.size(14.dp))
                         }
                     }
                 }
                 Row {
-                    Text("Formula: ${order.paymentMethod}", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = stringResource(R.string.profile_payment_method, order.paymentMethod), 
+                        style = MaterialTheme.typography.labelSmall
+                    )
                     Spacer(Modifier.weight(1f))
-                    Text("Total: ${order.total.money()}", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = stringResource(R.string.profile_total, order.total.money()), 
+                        fontWeight = FontWeight.ExtraBold, 
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 }
             }
         }

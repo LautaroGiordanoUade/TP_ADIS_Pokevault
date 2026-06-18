@@ -8,6 +8,7 @@ import com.pokevault.mobile.data.remote.AddVaultItemRequestDto
 import com.pokevault.mobile.data.remote.PokemonRemoteDataSource
 import com.pokevault.mobile.data.remote.VaultApi
 import com.pokevault.mobile.domain.model.PokemonCard
+import com.pokevault.mobile.domain.repository.PokemonRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -15,6 +16,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// TODO Data layer & Arquitectura MVVM:
+// 1. Inyección de dependencias directas de API: La clase DefaultPokemonRepository depende directamente de VaultApi (cliente de Retrofit).
+//    Para cumplir con el principio de abstracción, se debe crear un VaultRemoteDataSource en:
+//    data/datasource/remote/VaultRemoteDataSource.kt
+//    y hacer que el repositorio interactúe con este origen de datos en lugar de la API directamente.
+// 2. Acoplamiento de responsabilidades de Sesión: Se inyecta PreferencesDataSource para comprobar si el usuario está logueado en métodos como toggleFavorite.
+//    Sería mejor abstraer esta lógica delegando el estado de sesión a un AuthRepository o a un caso de uso (UseCase),
+//    evitando que el repositorio de Pokémon conozca detalles de persistencia de usuario y disminuyendo el acoplamiento.
 @Singleton
 class DefaultPokemonRepository @Inject constructor(
     private val remoteDataSource: PokemonRemoteDataSource,

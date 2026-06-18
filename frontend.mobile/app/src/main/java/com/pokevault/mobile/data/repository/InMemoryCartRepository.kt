@@ -2,6 +2,7 @@ package com.pokevault.mobile.data.repository
 
 import com.pokevault.mobile.domain.model.CartItem
 import com.pokevault.mobile.domain.model.PokemonCard
+import com.pokevault.mobile.domain.repository.CartRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

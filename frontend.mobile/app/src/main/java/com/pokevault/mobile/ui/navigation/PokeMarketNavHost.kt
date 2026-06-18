@@ -9,6 +9,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
@@ -62,7 +63,7 @@ fun PokeMarketNavHost() {
                             selected = isSelected,
                             label = {
                                 Text(
-                                    text = screen.label,
+                                    text = stringResource(screen.labelRes),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
                                 )
@@ -77,7 +78,7 @@ fun PokeMarketNavHost() {
                                         }
                                     }
                                 ) {
-                                    Icon(screen.icon!!, contentDescription = screen.label)
+                                    Icon(screen.icon!!, contentDescription = stringResource(screen.labelRes))
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(

@@ -1,4 +1,4 @@
-package com.pokevault.mobile.data.repository
+package com.pokevault.mobile.domain.repository
 
 import com.pokevault.mobile.domain.model.PokemonCard
 import kotlinx.coroutines.flow.Flow
