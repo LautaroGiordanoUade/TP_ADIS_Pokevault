@@ -2,8 +2,9 @@ package com.pokevault.mobile.ui.feature.profile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pokevault.mobile.data.repository.CartRepository
-import com.pokevault.mobile.data.repository.ProfileRepository
+import com.pokevault.mobile.data.local.LanguageManager
+import com.pokevault.mobile.domain.repository.CartRepository
+import com.pokevault.mobile.domain.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEffect
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEvent
 import com.pokevault.mobile.ui.feature.profile.state.ProfileUiState
@@ -22,13 +23,17 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val cartRepository: CartRepository,
+    private val languageManager: LanguageManager,
 ) : ViewModel() {
     private val screenState = MutableStateFlow(ProfileUiState())
     private val _effects = Channel<ProfileEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     val uiState = combine(screenState, profileRepository.profile) { state, profile ->
-        state.copy(profile = profile)
+        state.copy(
+            profile = profile,
+            currentLanguage = languageManager.getCurrentLanguage()
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
     init {
@@ -57,6 +62,10 @@ class ProfileViewModel @Inject constructor(
             }
             is ProfileEvent.OnPickupClick -> viewModelScope.launch {
                 _effects.send(ProfileEffect.NavigateToPickup)
+            }
+            is ProfileEvent.OnLanguageChanged -> {
+                languageManager.setLanguage(event.languageCode)
+                screenState.update { it.copy(currentLanguage = event.languageCode) }
             }
         }
     }

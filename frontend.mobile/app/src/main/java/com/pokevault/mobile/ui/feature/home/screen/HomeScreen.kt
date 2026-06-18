@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -39,6 +40,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.pokevault.mobile.R
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
 import com.pokevault.mobile.ui.feature.home.state.HomeEffect
 import com.pokevault.mobile.ui.feature.home.state.HomeEvent
@@ -95,6 +97,17 @@ fun HomeContent(
     onCardClick: (Int) -> Unit,
     onEvent: (HomeEvent) -> Unit,
 ) {
+    val title = if (state.isLoggedIn) {
+        stringResource(R.string.home_favorites_title, state.cards.size)
+    } else {
+        stringResource(R.string.home_gengar_title)
+    }
+    val subtitle = if (state.isLoggedIn) {
+        stringResource(R.string.home_favorites_subtitle)
+    } else {
+        stringResource(R.string.home_gengar_subtitle)
+    }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(top = contentPadding.calculateTopPadding())
@@ -110,25 +123,25 @@ fun HomeContent(
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.weight(1f))
-            Text("CATALOGO OFICIAL", color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.home_catalog_title), color = Muted, style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(8.dp))
-        Text("Adquiere cartas de coleccion en perfectas condiciones y con envio asegurado.", color = Muted)
+        Text(stringResource(R.string.home_catalog_subtitle), color = Muted)
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = state.query,
             onValueChange = { onEvent(HomeEvent.OnQueryChange(it)) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            placeholder = { Text("Buscar Pikachu, Charizard...") },
+            placeholder = { Text(stringResource(R.string.home_search_placeholder)) },
             singleLine = true,
             shape = RoundedCornerShape(8.dp),
         )
         Spacer(Modifier.height(16.dp))
         Row {
-            Text(state.title, style = MaterialTheme.typography.labelSmall)
+            Text(title, style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.weight(1f))
-            Text(state.subtitle, color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(subtitle, color = Muted, style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(10.dp))
         if (state.isLoading && state.cards.isEmpty()) {
@@ -171,8 +184,8 @@ private fun EmptySearchResults(modifier: Modifier = Modifier) {
     ) {
         Icon(Icons.Outlined.Search, contentDescription = null, tint = Muted)
         Spacer(Modifier.height(10.dp))
-        Text("NO SE ENCONTRARON CARTAS", style = MaterialTheme.typography.labelSmall)
-        Text("Proba buscar por nombre, rareza, set o artista.", color = Muted)
+        Text(stringResource(R.string.home_no_results_title), style = MaterialTheme.typography.labelSmall)
+        Text(stringResource(R.string.home_no_results_subtitle), color = Muted)
     }
 }
 
@@ -185,7 +198,7 @@ private fun EmptyFavorites(modifier: Modifier = Modifier) {
     ) {
         Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = Muted)
         Spacer(Modifier.height(10.dp))
-        Text("TODAVIA NO TENES FAVORITOS", style = MaterialTheme.typography.labelSmall)
-        Text("Marca cartas con el corazon para verlas aca.", color = Muted)
+        Text(stringResource(R.string.home_no_favorites_title), style = MaterialTheme.typography.labelSmall)
+        Text(stringResource(R.string.home_no_favorites_subtitle), color = Muted)
     }
 }

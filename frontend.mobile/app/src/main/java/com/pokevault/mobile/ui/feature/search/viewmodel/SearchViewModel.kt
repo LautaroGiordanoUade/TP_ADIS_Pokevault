@@ -2,9 +2,9 @@ package com.pokevault.mobile.ui.feature.search.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pokevault.mobile.data.local.PreferencesDataSource
-import com.pokevault.mobile.data.repository.CartRepository
-import com.pokevault.mobile.data.repository.PokemonRepository
+import com.pokevault.mobile.domain.repository.CartRepository
+import com.pokevault.mobile.domain.repository.PokemonRepository
+import com.pokevault.mobile.domain.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
 import com.pokevault.mobile.ui.feature.search.state.SearchUiState
@@ -29,7 +29,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository,
     private val cartRepository: CartRepository,
-    private val preferencesDataSource: PreferencesDataSource,
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState = _uiState.asStateFlow()
@@ -45,8 +45,7 @@ class SearchViewModel @Inject constructor(
             search(query = "", page = 1)
         }
         viewModelScope.launch {
-            preferencesDataSource.session
-                .map { it.isLoggedIn }
+            profileRepository.isLoggedIn
                 .distinctUntilChanged()
                 .collect { isLoggedIn ->
                     if (!isLoggedIn) {
@@ -67,7 +66,7 @@ class SearchViewModel @Inject constructor(
             }
             SearchEvent.OnToggleFilters -> _uiState.update { it.copy(filtersVisible = !it.filtersVisible) }
             is SearchEvent.OnFavoriteClick -> viewModelScope.launch {
-                if (!preferencesDataSource.session.first().isLoggedIn) {
+                if (!profileRepository.isLoggedIn.first()) {
                     _effects.send(SearchEffect.NavigateToLogin)
                     return@launch
                 }

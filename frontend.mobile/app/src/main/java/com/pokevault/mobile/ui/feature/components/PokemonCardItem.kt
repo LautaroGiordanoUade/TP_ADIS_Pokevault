@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.PokemonCard
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
@@ -70,20 +72,20 @@ fun PokemonCardItem(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("PRECIO", color = Muted, style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.card_price_label), color = Muted, style = MaterialTheme.typography.labelSmall)
                     Text(card.price.money(), fontWeight = FontWeight.ExtraBold)
                 }
                 IconButton(onClick = { onFavoriteClick(card) }, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Favorito",
+                        contentDescription = stringResource(R.string.card_favorite_desc),
                         tint = if (card.isFavorite) Color(0xFFFF2F68) else Muted,
                     )
                 }
                 IconButton(onClick = { onAddToCart(card) }, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.ShoppingBag,
-                        contentDescription = "Agregar al carrito",
+                        contentDescription = stringResource(R.string.card_add_to_cart_desc),
                         tint = MarketOrange,
                     )
                 }
@@ -94,7 +96,7 @@ fun PokemonCardItem(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
                 ) {
                     Icon(Icons.Outlined.Info, contentDescription = null, tint = MarketOrange, modifier = Modifier.size(13.dp))
-                    Text("Detalle", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.card_detail_button), style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

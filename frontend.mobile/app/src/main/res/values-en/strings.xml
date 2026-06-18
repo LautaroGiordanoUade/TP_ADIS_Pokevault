@@ -1,0 +1,109 @@
+<resources>
+    <string name="app_name">PokeMarket</string>
+    
+    <!-- Profile Login Screen -->
+    <string name="profile_login_title">LOG IN TO POKEMARKET</string>
+    <string name="profile_login_subtitle">Continue with Google to save favorites and view your purchase history.</string>
+    <string name="profile_login_connecting">CONNECTING...</string>
+    <string name="profile_login_continue">CONTINUE WITH GOOGLE</string>
+    <string name="profile_login_error_missing_client_id">Missing GOOGLE_WEB_CLIENT_ID configuration</string>
+    <string name="profile_login_error_no_accounts">No Google accounts available on this device</string>
+    <string name="profile_login_error_invalid_token">Google did not return a valid token</string>
+    <string name="profile_login_error_failed">Could not sign in with Google</string>
+    <string name="profile_login_error_refresh_failed">Could not update purchase history</string>
+
+    <!-- Profile Details Screen -->
+    <string name="profile_account_title">ACCOUNT:</string>
+    <string name="profile_logout">LOG OUT</string>
+    <string name="profile_purchase_history">PURCHASE HISTORY (%1$d)</string>
+    <string name="profile_order_number">ORDER #%1$d</string>
+    <string name="profile_to_pickup">TO PICK UP</string>
+    <string name="profile_ready_to_pickup">READY TO PICK UP!\nBranch: UADE (Lima 757, CABA)</string>
+    <string name="profile_view_map">VIEW MAP</string>
+    <string name="profile_payment_method">Payment Method: %1$s</string>
+    <string name="profile_total">Total: %1$s</string>
+
+    <!-- Language Selector UI -->
+    <string name="profile_settings_title">SETTINGS / CONFIGURACIÓN</string>
+    <string name="profile_language_label">Language / Idioma</string>
+    <string name="profile_language_dialog_title">Select Language / Seleccionar Idioma</string>
+    <string name="profile_language_spanish">Español</string>
+    <string name="profile_language_english">English</string>
+    <string name="profile_language_cancel">Cancel</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Explore</string>
+    <string name="nav_cart">Cart</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_pickup">Pickup</string>
+    <string name="nav_detail">Detail</string>
+
+    <!-- Card Component -->
+    <string name="card_price_label">PRICE</string>
+    <string name="card_favorite_desc">Favorite</string>
+    <string name="card_add_to_cart_desc">Add to cart</string>
+    <string name="card_detail_button">Detail</string>
+
+    <!-- Cart Screen -->
+    <string name="cart_items_selected">SELECTED ITEMS (%1$d)</string>
+    <string name="cart_unit_price">Unit price: %1$s</string>
+    <string name="cart_item_total">Total</string>
+    <string name="cart_remove">Remove</string>
+    <string name="cart_delivery_address_label">SECURED DELIVERY ADDRESS</string>
+    <string name="cart_subtotal_label">Cards subtotal:</string>
+    <string name="cart_shipping_label">PSA Secured Shipping:</string>
+    <string name="cart_shipping_free">Free!</string>
+    <string name="cart_final_total_label">Final settled amount:</string>
+    <string name="cart_confirming">CONFIRMING...</string>
+    <string name="cart_confirm_payment">CONFIRM SECURED PAYMENT</string>
+    <string name="cart_empty_title">YOUR CART IS EMPTY</string>
+    <string name="cart_empty_subtitle">You have not reserved any Pokémon\ncollectible cards yet.</string>
+    <string name="cart_explore">EXPLORE CARDS</string>
+    <string name="cart_error_confirm_payment">Could not confirm payment</string>
+
+    <!-- Home Screen -->
+    <string name="home_catalog_title">OFFICIAL CATALOG</string>
+    <string name="home_catalog_subtitle">Acquire collectible cards in perfect condition with insured shipping.</string>
+    <string name="home_favorites_title">FAVORITES COLLECTION (%1$d)</string>
+    <string name="home_favorites_subtitle">Your collection gems</string>
+    <string name="home_gengar_title">FEATURED GENGAR</string>
+    <string name="home_gengar_subtitle">Sign in to save favorites</string>
+    <string name="home_search_placeholder">Search Pikachu, Charizard...</string>
+    <string name="home_no_results_title">NO CARDS FOUND</string>
+    <string name="home_no_results_subtitle">Try searching by name, rarity, set or artist.</string>
+    <string name="home_no_favorites_title">YOU HAVE NO FAVORITES YET</string>
+    <string name="home_no_favorites_subtitle">Mark cards with a heart to see them here.</string>
+
+    <!-- Search Screen -->
+    <string name="search_placeholder">Search by name, edition...</string>
+    <string name="search_filters_button">Filters</string>
+    <string name="search_filter_type">TYPE</string>
+    <string name="search_filter_rarity">RARITY / VALUE</string>
+    <string name="search_filter_price">MAX PRICE</string>
+    <string name="search_filter_sort">SORT BY</string>
+    <string name="search_no_results">No cards found</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_viewing">YOU ARE VIEWING:</string>
+    <string name="detail_price_final">FINAL PRICE</string>
+    <string name="detail_add_to_cart">ADD TO CART</string>
+    <string name="detail_error_loading">Could not load the card</string>
+    <string name="detail_fallback_description">Rare delta species %1$s of dual element. Delta Charge enables quick lightning...</string>
+
+    <!-- Pickup Screen -->
+    <string name="pickup_title">PICKUP IN STORE</string>
+    <string name="pickup_order_number_demo">ORDER #PKM-A7X2</string>
+    <string name="pickup_ready_label">READY AT BRANCH</string>
+    <string name="pickup_distance_format">Distance to branch\n%1$s</string>
+    <string name="pickup_pending_location">Pending location</string>
+    <string name="pickup_location_name">UADE OFFICIAL PICKUP POINT</string>
+    <string name="pickup_location_building">UADE (Monserrat Main Campus - Lima Building)</string>
+    <string name="pickup_hours_label">Delivery Hours</string>
+    <string name="pickup_hours">Mon to Fri 08:30 -\n21:30 hs</string>
+    <string name="pickup_requirements_granted">Requirements for Pickup:\nPresent ID of the interested party and the authorization QR code or the transaction number #PKM-A7X2.</string>
+    <string name="pickup_requirements_denied">Enable location permission to calculate the distance from your current position.</string>
+    <string name="pickup_get_directions">GET DIRECTIONS</string>
+    <string name="pickup_meters">%1$d meters</string>
+    <string name="pickup_km">%1$s km</string>
+</resources>

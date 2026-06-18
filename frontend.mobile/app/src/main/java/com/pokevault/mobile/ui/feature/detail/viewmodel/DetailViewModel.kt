@@ -3,9 +3,9 @@ package com.pokevault.mobile.ui.feature.detail.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pokevault.mobile.data.local.PreferencesDataSource
-import com.pokevault.mobile.data.repository.CartRepository
-import com.pokevault.mobile.data.repository.PokemonRepository
+import com.pokevault.mobile.domain.repository.CartRepository
+import com.pokevault.mobile.domain.repository.PokemonRepository
+import com.pokevault.mobile.domain.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.detail.state.DetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository,
     private val cartRepository: CartRepository,
-    private val preferencesDataSource: PreferencesDataSource,
+    private val profileRepository: ProfileRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -36,8 +36,7 @@ class DetailViewModel @Inject constructor(
     init {
         loadCard()
         viewModelScope.launch {
-            preferencesDataSource.session
-                .map { it.isLoggedIn }
+            profileRepository.isLoggedIn
                 .distinctUntilChanged()
                 .collect { isLoggedIn ->
                     if (!isLoggedIn) {
@@ -64,7 +63,7 @@ class DetailViewModel @Inject constructor(
     fun onFavoriteClick() {
         val currentCard = _uiState.value.card ?: return
         viewModelScope.launch {
-            if (!preferencesDataSource.session.first().isLoggedIn) {
+            if (!profileRepository.isLoggedIn.first()) {
                 _effects.send(DetailEffect.NavigateToLogin)
                 return@launch
             }

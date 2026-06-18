@@ -1,12 +1,10 @@
 package com.pokevault.mobile.ui.feature.pickup.screen
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,12 +31,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -46,44 +41,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pokevault.mobile.R
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEffect
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEvent
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
-import kotlin.math.atan2
-import kotlin.math.cos
 import kotlin.math.roundToInt
-import kotlin.math.sin
-import kotlin.math.sqrt
-
-private const val STORE_LATITUDE = -34.618279
-private const val STORE_LONGITUDE = -58.381565
-private const val STORE_ADDRESS = "Lima 757, Ciudad Autonoma de Buenos Aires, Argentina"
 
 @Composable
 fun PickupScreen(
     contentPadding: PaddingValues,
     onClose: () -> Unit,
+    viewModel: PickupViewModel = hiltViewModel(),
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var currentLocation by remember { mutableStateOf<Location?>(null) }
-    var locationPermissionGranted by remember { mutableStateOf(hasLocationPermission(context)) }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { permissions ->
-        locationPermissionGranted = permissions.values.any { it }
-        if (locationPermissionGranted) {
-            currentLocation = findLastKnownLocation(context)
-        }
+        val granted = permissions.values.any { it }
+        viewModel.onEvent(PickupEvent.OnPermissionResult(granted))
     }
 
-    LaunchedEffect(locationPermissionGranted) {
-        if (locationPermissionGranted) {
-            currentLocation = findLastKnownLocation(context)
-        } else {
+    LaunchedEffect(state.locationPermissionGranted) {
+        if (!state.locationPermissionGranted) {
             permissionLauncher.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -93,9 +81,23 @@ fun PickupScreen(
         }
     }
 
-    val distanceText = currentLocation?.let { location ->
-        formatDistance(distanceInMeters(location.latitude, location.longitude, STORE_LATITUDE, STORE_LONGITUDE))
-    } ?: "Ubicacion pendiente"
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is PickupEffect.OpenDirections -> {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(effect.url)))
+                }
+            }
+        }
+    }
+
+    val distanceText = state.distanceInMeters?.let { meters ->
+        if (meters < 1_000) {
+            stringResource(R.string.pickup_meters, meters.roundToInt())
+        } else {
+            stringResource(R.string.pickup_km, String.format("%.1f", meters / 1_000))
+        }
+    } ?: stringResource(R.string.pickup_pending_location)
 
     Column(
         modifier = Modifier
@@ -107,11 +109,11 @@ fun PickupScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Cerrar", tint = Color.White) }
             Column {
-                Text("RETIRO EN PAQUETERIA", color = Color.White, fontWeight = FontWeight.ExtraBold)
-                Text("ORDEN #PKM-A7X2", color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.pickup_title), color = Color.White, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.pickup_order_number_demo), color = Muted, style = MaterialTheme.typography.labelSmall)
             }
             Spacer(Modifier.weight(1f))
-            Text("LISTO EN SEDE", color = MarketOrange, style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.pickup_ready_label), color = MarketOrange, style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(12.dp))
         Box(modifier = Modifier.fillMaxWidth().height(250.dp).background(Color(0xFF17181F), RoundedCornerShape(8.dp))) {
@@ -121,30 +123,30 @@ fun PickupScreen(
                 shape = RoundedCornerShape(50),
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
             ) {
-                Text("Distancia al punto\n$distanceText", color = Color.White, modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp), style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.pickup_distance_format, distanceText), color = Color.White, modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp), style = MaterialTheme.typography.labelSmall)
             }
             Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MarketOrange, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 54.dp, top = 28.dp).size(42.dp))
         }
         Spacer(Modifier.height(18.dp))
         Row {
             Column(modifier = Modifier.weight(1f)) {
-                Text("PUNTO OFICIAL DE RETIRO UADE", color = Color.White, fontWeight = FontWeight.ExtraBold)
-                Text("UADE (Sede Principal Monserrat - Edificio Lima)", color = Color.White)
-                Text(STORE_ADDRESS, color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.pickup_location_name), color = Color.White, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.pickup_location_building), color = Color.White)
+                Text(state.destinationAddress, color = MarketOrange, fontWeight = FontWeight.ExtraBold)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text("Horario de Entrega", color = Muted, style = MaterialTheme.typography.labelSmall)
-                Text("Lun a Vie 08:30 -\n21:30 hs", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.pickup_hours_label), color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.pickup_hours), color = Color.White, fontWeight = FontWeight.ExtraBold)
             }
         }
         Card(colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFF1C1D23)), modifier = Modifier.padding(top = 18.dp)) {
             Row(modifier = Modifier.padding(14.dp)) {
                 Icon(Icons.Outlined.Info, null, tint = MarketOrange)
                 Text(
-                    if (locationPermissionGranted) {
-                        "Requisitos para Retiro:\nPresenta DNI del interesado y el codigo QR de autorizacion o el numero de transaccion #PKM-A7X2."
+                    if (state.locationPermissionGranted) {
+                        stringResource(R.string.pickup_requirements_granted)
                     } else {
-                        "Activa el permiso de ubicacion para calcular la distancia desde tu posicion actual."
+                        stringResource(R.string.pickup_requirements_denied)
                     },
                     color = Color.White,
                     modifier = Modifier.padding(start = 10.dp),
@@ -153,54 +155,15 @@ fun PickupScreen(
         }
         Spacer(Modifier.weight(1f))
         Button(
-            onClick = { openDirections(context, currentLocation) },
+            onClick = { viewModel.onEvent(PickupEvent.OnGetDirectionsClick) },
             colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
             Icon(Icons.Outlined.Route, null)
-            Text("COMO LLEGAR AL LOCAL", fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 8.dp))
+            Text(stringResource(R.string.pickup_get_directions), fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 8.dp))
         }
     }
-}
-
-private fun hasLocationPermission(context: Context): Boolean =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
-private fun findLastKnownLocation(context: Context): Location? {
-    if (!hasLocationPermission(context)) return null
-    val manager = context.getSystemService(LocationManager::class.java)
-    return manager.getProviders(true)
-        .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
-        .maxByOrNull { it.time }
-}
-
-private fun distanceInMeters(fromLat: Double, fromLng: Double, toLat: Double, toLng: Double): Double {
-    val earthRadius = 6_371_000.0
-    val dLat = Math.toRadians(toLat - fromLat)
-    val dLng = Math.toRadians(toLng - fromLng)
-    val lat1 = Math.toRadians(fromLat)
-    val lat2 = Math.toRadians(toLat)
-    val a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1) * cos(lat2) * sin(dLng / 2) * sin(dLng / 2)
-    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return earthRadius * c
-}
-
-private fun formatDistance(meters: Double): String =
-    if (meters < 1_000) {
-        "${meters.roundToInt()} metros"
-    } else {
-        "${String.format("%.1f", meters / 1_000)} km"
-    }
-
-private fun openDirections(context: Context, origin: Location?) {
-    val originParam = origin?.let { "&origin=${it.latitude},${it.longitude}" }.orEmpty()
-    val uri = Uri.parse(
-        "https://www.google.com/maps/dir/?api=1$originParam&destination=$STORE_LATITUDE,$STORE_LONGITUDE&travelmode=walking",
-    )
-    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
 }
 
 @Composable

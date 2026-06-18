@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,6 +43,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.pokevault.mobile.R
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
 import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
@@ -120,7 +122,7 @@ fun SearchContent(
                 value = state.query,
                 onValueChange = { onEvent(SearchEvent.OnQueryChange(it)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                placeholder = { Text("Buscar por nombre, edicion...") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 singleLine = true,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.weight(1f),
@@ -135,7 +137,7 @@ fun SearchContent(
                 modifier = Modifier.height(56.dp),
             ) {
                 Icon(Icons.Outlined.Tune, contentDescription = null)
-                Text("Filtros", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
+                Text(stringResource(R.string.search_filters_button), fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
             }
         }
 
@@ -185,7 +187,7 @@ fun SearchContent(
 
             if (!state.isLoading && state.cards.isEmpty()) {
                 Text(
-                    "No se encontraron cartas",
+                    stringResource(R.string.search_no_results),
                     modifier = Modifier.align(Alignment.Center),
                     color = Muted
                 )
@@ -198,12 +200,12 @@ fun SearchContent(
 private fun FilterPanel(state: SearchUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterValue("TIPO", state.selectedType, Modifier.weight(1f))
-            FilterValue("RAREZA / VALOR", state.selectedRarity, Modifier.weight(1f))
+            FilterValue(stringResource(R.string.search_filter_type), state.selectedType, Modifier.weight(1f))
+            FilterValue(stringResource(R.string.search_filter_rarity), state.selectedRarity, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterValue("PRECIO MAXIMO", state.selectedPrice, Modifier.weight(1f))
-            FilterValue("ORDENAR POR", state.selectedSort, Modifier.weight(1f))
+            FilterValue(stringResource(R.string.search_filter_price), state.selectedPrice, Modifier.weight(1f))
+            FilterValue(stringResource(R.string.search_filter_sort), state.selectedSort, Modifier.weight(1f))
         }
     }
 }

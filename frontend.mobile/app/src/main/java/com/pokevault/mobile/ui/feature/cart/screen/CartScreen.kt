@@ -36,10 +36,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.CartItem
 import com.pokevault.mobile.ui.feature.cart.state.CartEvent
 import com.pokevault.mobile.ui.feature.cart.state.CartUiState
@@ -84,7 +86,7 @@ fun CartContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(top = 18.dp, bottom = 18.dp),
             ) {
-                item { Text("ARTICULOS SELECCIONADOS (${state.totalQuantity})", color = Muted, style = MaterialTheme.typography.labelSmall) }
+                item { Text(stringResource(R.string.cart_items_selected, state.totalQuantity), color = Muted, style = MaterialTheme.typography.labelSmall) }
                 items(state.items, key = { it.card.id }) { item ->
                     CartItemRow(
                         item = item,
@@ -131,7 +133,7 @@ private fun CartItemRow(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "Precio unitario: ${item.card.price.money()}",
+                    stringResource(R.string.cart_unit_price, item.card.price.money()),
                     color = Muted,
                     style = MaterialTheme.typography.labelSmall,
                 )
@@ -142,9 +144,9 @@ private fun CartItemRow(
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text("Total", color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.cart_item_total), color = Muted, style = MaterialTheme.typography.labelSmall)
                 Text((item.card.price * item.quantity).money(), fontWeight = FontWeight.ExtraBold)
-                IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = "Eliminar", tint = Muted) }
+                IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.cart_remove), tint = Muted) }
             }
         }
     }
@@ -163,15 +165,15 @@ private fun CheckoutPanel(
             .padding(bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text("DIRECCION DE DESPACHO ASEGURADO", color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(stringResource(R.string.cart_delivery_address_label), color = Muted, style = MaterialTheme.typography.labelSmall)
         OutlinedCard(shape = RoundedCornerShape(6.dp), modifier = Modifier.fillMaxWidth()) {
             Text(state.deliveryAddress, modifier = Modifier.padding(12.dp))
         }
         Card(colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Color.Black)) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row { Text("Subtotal de cartas:", color = Muted); Spacer(Modifier.weight(1f)); Text(state.subtotal.money()) }
-                Row { Text("Envio Asegurado PSA:", color = Muted); Spacer(Modifier.weight(1f)); Text("Gratis!") }
-                Row { Text("Monto final liquidado:", fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text(state.finalTotal.money(), fontWeight = FontWeight.ExtraBold) }
+                Row { Text(stringResource(R.string.cart_subtotal_label), color = Muted); Spacer(Modifier.weight(1f)); Text(state.subtotal.money()) }
+                Row { Text(stringResource(R.string.cart_shipping_label), color = Muted); Spacer(Modifier.weight(1f)); Text(stringResource(R.string.cart_shipping_free)) }
+                Row { Text(stringResource(R.string.cart_final_total_label), fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text(state.finalTotal.money(), fontWeight = FontWeight.ExtraBold) }
             }
         }
         Button(
@@ -181,11 +183,16 @@ private fun CheckoutPanel(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
-            Text(if (state.isSubmitting) "CONFIRMANDO..." else "CONFIRMAR PAGO ASEGURADO", fontWeight = FontWeight.ExtraBold)
+            Text(if (state.isSubmitting) stringResource(R.string.cart_confirming) else stringResource(R.string.cart_confirm_payment), fontWeight = FontWeight.ExtraBold)
             Icon(Icons.Outlined.Security, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
         }
         state.errorMessage?.let { message ->
-            Text(message, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
+            val displayError = if (message == "No se pudo confirmar la compra") {
+                stringResource(R.string.cart_error_confirm_payment)
+            } else {
+                message
+            }
+            Text(displayError, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -197,14 +204,14 @@ private fun EmptyCart(onExploreCards: () -> Unit) {
             OutlinedCard(shape = RoundedCornerShape(50)) {
                 Icon(Icons.Outlined.ShoppingBag, contentDescription = null, tint = Muted, modifier = Modifier.padding(14.dp).size(36.dp))
             }
-            Text("TU CARRITO ESTA VACIO", fontWeight = FontWeight.ExtraBold)
-            Text("Aun no reservaste cartas\ncoleccionables de Pokemon.", color = Muted)
+            Text(stringResource(R.string.cart_empty_title), fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.cart_empty_subtitle), color = Muted)
             Button(
                 onClick = onExploreCards,
                 colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
                 shape = RoundedCornerShape(8.dp),
             ) {
-                Text("EXPLORAR CARTAS", fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.cart_explore), fontWeight = FontWeight.ExtraBold)
             }
         }
     }

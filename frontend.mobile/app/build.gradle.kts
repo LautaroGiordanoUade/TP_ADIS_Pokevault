@@ -41,7 +41,7 @@ val configuredApiBaseUrl = (
 val apiBaseUrl = ensureTrailingSlash(
     configuredApiBaseUrl ?: when (apiTarget) {
         "local", "current" -> "http://10.0.2.2:8000/api/"
-        "server", "deployed", "back4app" -> "https://pokevaultapi-izqk2xgb.b4a.run/api/"
+        "server", "deployed", "back4app" -> "https://pokevaultapi-we8cuobk.b4a.run/api/"
         else -> error("Unknown API_TARGET '$apiTarget'. Use local, current, server, deployed, or back4app.")
     }
 )
@@ -56,6 +56,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        resourceConfigurations.addAll(listOf("es", "en"))
 
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField(
@@ -63,6 +64,16 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${localProperties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: System.getenv("GOOGLE_WEB_CLIENT_ID").orEmpty()}\"",
         )
+    }
+
+    androidResources {
+        generateLocaleConfig = true
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
     }
 
     buildFeatures {
@@ -84,6 +95,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)

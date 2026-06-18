@@ -1,3 +1,109 @@
 <resources>
     <string name="app_name">PokeMarket</string>
+    
+    <!-- Profile Login Screen -->
+    <string name="profile_login_title">INGRESAR A POKEMARKET</string>
+    <string name="profile_login_subtitle">Continúa con Google para guardar favoritos y ver tu historial de compras.</string>
+    <string name="profile_login_connecting">CONECTANDO...</string>
+    <string name="profile_login_continue">CONTINUAR CON GOOGLE</string>
+    <string name="profile_login_error_missing_client_id">Falta configurar GOOGLE_WEB_CLIENT_ID</string>
+    <string name="profile_login_error_no_accounts">No hay cuentas de Google disponibles en este dispositivo</string>
+    <string name="profile_login_error_invalid_token">Google no devolvió un token válido</string>
+    <string name="profile_login_error_failed">No se pudo iniciar sesión con Google</string>
+    <string name="profile_login_error_refresh_failed">No se pudo actualizar el historial</string>
+
+    <!-- Profile Details Screen -->
+    <string name="profile_account_title">CUENTA:</string>
+    <string name="profile_logout">CERRAR SESIÓN</string>
+    <string name="profile_purchase_history">HISTORIAL DE COMPRAS (%1$d)</string>
+    <string name="profile_order_number">ORDEN #%1$d</string>
+    <string name="profile_to_pickup">PARA RETIRAR</string>
+    <string name="profile_ready_to_pickup">LISTO PARA RETIRAR!\nSucursal: UADE (Lima 757, CABA)</string>
+    <string name="profile_view_map">VER MAPA</string>
+    <string name="profile_payment_method">Fórmula: %1$s</string>
+    <string name="profile_total">Total: %1$s</string>
+
+    <!-- Language Selector UI -->
+    <string name="profile_settings_title">CONFIGURACIÓN / SETTINGS</string>
+    <string name="profile_language_label">Idioma / Language</string>
+    <string name="profile_language_dialog_title">Seleccionar Idioma / Select Language</string>
+    <string name="profile_language_spanish">Español</string>
+    <string name="profile_language_english">English</string>
+    <string name="profile_language_cancel">Cancelar</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_cart">Carrito</string>
+    <string name="nav_profile">Ingresar</string>
+    <string name="nav_pickup">Retiro</string>
+    <string name="nav_detail">Detalle</string>
+
+    <!-- Card Component -->
+    <string name="card_price_label">PRECIO</string>
+    <string name="card_favorite_desc">Favorito</string>
+    <string name="card_add_to_cart_desc">Agregar al carrito</string>
+    <string name="card_detail_button">Detalle</string>
+
+    <!-- Cart Screen -->
+    <string name="cart_items_selected">ARTÍCULOS SELECCIONADOS (%1$d)</string>
+    <string name="cart_unit_price">Precio unitario: %1$s</string>
+    <string name="cart_item_total">Total</string>
+    <string name="cart_remove">Eliminar</string>
+    <string name="cart_delivery_address_label">DIRECCIÓN DE DESPACHO ASEGURADO</string>
+    <string name="cart_subtotal_label">Subtotal de cartas:</string>
+    <string name="cart_shipping_label">Envío Asegurado PSA:</string>
+    <string name="cart_shipping_free">¡Gratis!</string>
+    <string name="cart_final_total_label">Monto final liquidado:</string>
+    <string name="cart_confirming">CONFIRMANDO...</string>
+    <string name="cart_confirm_payment">CONFIRMAR PAGO ASEGURADO</string>
+    <string name="cart_empty_title">TU CARRITO ESTÁ VACÍO</string>
+    <string name="cart_empty_subtitle">Aún no reservaste cartas\ncoleccionables de Pokémon.</string>
+    <string name="cart_explore">EXPLORAR CARTAS</string>
+    <string name="cart_error_confirm_payment">No se pudo confirmar la compra</string>
+
+    <!-- Home Screen -->
+    <string name="home_catalog_title">CATÁLOGO OFICIAL</string>
+    <string name="home_catalog_subtitle">Adquiere cartas de colección en perfectas condiciones y con envío asegurado.</string>
+    <string name="home_favorites_title">COLECCIÓN DE FAVORITOS (%1$d)</string>
+    <string name="home_favorites_subtitle">Tus joyas de colección</string>
+    <string name="home_gengar_title">GENGAR DESTACADOS</string>
+    <string name="home_gengar_subtitle">Iniciá sesión para guardar favoritos</string>
+    <string name="home_search_placeholder">Buscar Pikachu, Charizard...</string>
+    <string name="home_no_results_title">NO SE ENCONTRARON CARTAS</string>
+    <string name="home_no_results_subtitle">Probá buscar por nombre, rareza, set o artista.</string>
+    <string name="home_no_favorites_title">TODAVÍA NO TENÉS FAVORITOS</string>
+    <string name="home_no_favorites_subtitle">Marcá cartas con el corazón para verlas acá.</string>
+
+    <!-- Search Screen -->
+    <string name="search_placeholder">Buscar por nombre, edición...</string>
+    <string name="search_filters_button">Filtros</string>
+    <string name="search_filter_type">TIPO</string>
+    <string name="search_filter_rarity">RAREZA / VALOR</string>
+    <string name="search_filter_price">PRECIO MÁXIMO</string>
+    <string name="search_filter_sort">ORDENAR POR</string>
+    <string name="search_no_results">No se encontraron cartas</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_viewing">ESTÁS VIENDO:</string>
+    <string name="detail_price_final">PRECIO FINAL</string>
+    <string name="detail_add_to_cart">AGREGAR AL CARRITO</string>
+    <string name="detail_error_loading">No se pudo cargar la carta</string>
+    <string name="detail_fallback_description">Especie delta rara de %1$s de elemento dual. Carga Delta permite un rayo rápido...</string>
+
+    <!-- Pickup Screen -->
+    <string name="pickup_title">RETIRO EN PAQUETERÍA</string>
+    <string name="pickup_order_number_demo">ORDEN #PKM-A7X2</string>
+    <string name="pickup_ready_label">LISTO EN SEDE</string>
+    <string name="pickup_distance_format">Distancia al punto\n%1$s</string>
+    <string name="pickup_pending_location">Ubicación pendiente</string>
+    <string name="pickup_location_name">PUNTO OFICIAL DE RETIRO UADE</string>
+    <string name="pickup_location_building">UADE (Sede Principal Monserrat - Edificio Lima)</string>
+    <string name="pickup_hours_label">Horario de Entrega</string>
+    <string name="pickup_hours">Lun a Vie 08:30 -\n21:30 hs</string>
+    <string name="pickup_requirements_granted">Requisitos para Retiro:\nPresentá DNI del interesado y el código QR de autorización o el número de transacción #PKM-A7X2.</string>
+    <string name="pickup_requirements_denied">Activá el permiso de ubicación para calcular la distancia desde tu posición actual.</string>
+    <string name="pickup_get_directions">CÓMO LLEGAR AL LOCAL</string>
+    <string name="pickup_meters">%1$d metros</string>
+    <string name="pickup_km">%1$s km</string>
 </resources>

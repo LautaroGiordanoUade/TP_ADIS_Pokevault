@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import com.pokevault.mobile.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +43,15 @@ import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
 
+// TODO Jetpack Compose & Arquitectura MVVM:
+// 1. Cadenas de texto hardcodeadas: Cadenas de texto tales como "ESTÁS VIENDO:", "PRECIO FINAL" y "AGREGAR AL CARRITO"
+//    están codificadas directamente. Deben moverse al archivo de recursos strings.xml.
+// 2. Colores fijos: Se definen colores directamente en el Composable como Color(0xFFFF2F68) para el corazón de favoritos,
+//    y Color.Black.copy(...) para el sombreado o bordes. Esto rompe la consistencia estética del tema oscuro/claro de Material 3.
+//    Se deben definir estos colores en ui/theme/Theme.kt o ui/theme/Color.kt y consumirlos mediante MaterialTheme.colorScheme.
+// 3. Lógica de Ciclo de Vida: El uso de DisposableEffect para añadir/remover el LifecycleEventObserver y gatillar
+//    'viewModel.refresh()' en el evento ON_RESUME es correcto, pero se podría encapsular en un efecto secundario
+//    reutilizable o manejar a través del repositorio reactivo si los flujos fuesen completamente calientes y observables.
 @Composable
 fun DetailScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -162,7 +173,7 @@ private fun DetailContent(
                 .padding(20.dp)
         ) {
             Text(
-                text = "\"${card.description ?: "Rare delta species ${card.name} of dual element. Delta Charge enables quick lightning..."}\"",
+                text = "\"${card.description ?: stringResource(R.string.detail_fallback_description, card.name)}\"",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Black.copy(alpha = 0.85f),
                 fontStyle = FontStyle.Italic,
@@ -180,7 +191,7 @@ private fun DetailContent(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "ESTÁS VIENDO:",
+                    stringResource(R.string.detail_viewing),
                     style = MaterialTheme.typography.labelSmall,
                     color = Muted,
                     letterSpacing = 1.sp,
@@ -201,7 +212,7 @@ private fun DetailContent(
                     color = Color.Black
                 )
                 Text(
-                    "PRECIO FINAL",
+                    stringResource(R.string.detail_price_final),
                     style = MaterialTheme.typography.labelSmall,
                     color = Muted,
                     fontWeight = FontWeight.Bold
@@ -231,7 +242,7 @@ private fun DetailContent(
             )
             Spacer(Modifier.size(12.dp))
             Text(
-                "AGREGAR AL CARRITO",
+                stringResource(R.string.detail_add_to_cart),
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 0.5.sp,
                 fontSize = 16.sp

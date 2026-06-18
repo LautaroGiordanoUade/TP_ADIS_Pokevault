@@ -8,6 +8,7 @@ data class ProfileUiState(
     val orders: List<Order> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val currentLanguage: String = "es",
 )
 
 sealed interface ProfileEvent {
@@ -18,6 +19,7 @@ sealed interface ProfileEvent {
     data object OnLoginCanceled : ProfileEvent
     data object OnLogoutClick : ProfileEvent
     data class OnPickupClick(val orderId: Int) : ProfileEvent
+    data class OnLanguageChanged(val languageCode: String) : ProfileEvent
 }
 
 sealed interface ProfileEffect {
