@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -30,7 +31,11 @@ import com.pokevault.mobile.ui.feature.detail.screen.DetailScreen
 import com.pokevault.mobile.ui.feature.home.screen.HomeScreen
 import com.pokevault.mobile.ui.feature.onboarding.screen.OnboardingGateScreen
 import com.pokevault.mobile.ui.feature.onboarding.screen.OnboardingScreen
+import com.pokevault.mobile.ui.feature.pickup.qr.QrScanContract
+import com.pokevault.mobile.ui.feature.pickup.qr.QrScannerScreen
 import com.pokevault.mobile.ui.feature.pickup.screen.PickupScreen
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEvent
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupViewModel
 import com.pokevault.mobile.ui.feature.profile.screen.ProfileScreen
 import com.pokevault.mobile.ui.feature.search.screen.SearchScreen
 import com.pokevault.mobile.ui.theme.MarketOrange
@@ -183,10 +188,42 @@ fun PokeMarketNavHost() {
                     }
                 )
             }
-            composable(PokeMarketDestination.Pickup.route) {
+            composable(PokeMarketDestination.Pickup.route) { backStackEntry ->
+                val pickupViewModel: PickupViewModel = hiltViewModel(backStackEntry)
+                val qrScanResult by backStackEntry.savedStateHandle
+                    .getStateFlow<String?>(QrScanContract.ResultKey, null)
+                    .collectAsStateWithLifecycle()
+
+                LaunchedEffect(qrScanResult) {
+                    val rawValue = qrScanResult ?: return@LaunchedEffect
+                    pickupViewModel.onEvent(PickupEvent.OnQrAuthorizationResult(rawValue))
+                    backStackEntry.savedStateHandle[QrScanContract.ResultKey] = null
+                }
+
                 PickupScreen(
                     contentPadding = innerPadding,
                     onClose = { navController.popBackStack() },
+                    onOpenQrScanner = { orderCode ->
+                        navController.navigate(PokeMarketDestination.QrScanner.createRoute(orderCode))
+                    },
+                    viewModel = pickupViewModel,
+                )
+            }
+            composable(
+                route = PokeMarketDestination.QrScanner.route,
+                arguments = listOf(navArgument(PokeMarketDestination.QrScanner.orderCodeArgument) {
+                    type = NavType.StringType
+                }),
+            ) {
+                QrScannerScreen(
+                    contentPadding = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onAuthorized = { result ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set(QrScanContract.ResultKey, result.rawValue)
+                        navController.popBackStack()
+                    },
                 )
             }
         }

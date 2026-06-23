@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pokevault.mobile.R
 import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEffect
 import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEvent
+import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupAuthorizationStatus
 import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
@@ -58,6 +60,7 @@ import kotlin.math.roundToInt
 fun PickupScreen(
     contentPadding: PaddingValues,
     onClose: () -> Unit,
+    onOpenQrScanner: (String) -> Unit,
     viewModel: PickupViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -90,7 +93,7 @@ fun PickupScreen(
             }
         }
     }
-
+    
     val distanceText = state.distanceInMeters?.let { meters ->
         if (meters < 1_000) {
             stringResource(R.string.pickup_meters, meters.roundToInt())
@@ -110,10 +113,18 @@ fun PickupScreen(
             IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Cerrar", tint = Color.White) }
             Column {
                 Text(stringResource(R.string.pickup_title), color = Color.White, fontWeight = FontWeight.ExtraBold)
-                Text(stringResource(R.string.pickup_order_number_demo), color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.pickup_order_number, state.orderCode), color = Muted, style = MaterialTheme.typography.labelSmall)
             }
             Spacer(Modifier.weight(1f))
-            Text(stringResource(R.string.pickup_ready_label), color = MarketOrange, style = MaterialTheme.typography.labelSmall)
+            Text(
+                text = if (state.authorizationStatus == PickupAuthorizationStatus.Authorized) {
+                    stringResource(R.string.pickup_authorized_label)
+                } else {
+                    stringResource(R.string.pickup_ready_label)
+                },
+                color = MarketOrange,
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
         Spacer(Modifier.height(12.dp))
         Box(modifier = Modifier.fillMaxWidth().height(250.dp).background(Color(0xFF17181F), RoundedCornerShape(8.dp))) {
@@ -143,7 +154,9 @@ fun PickupScreen(
             Row(modifier = Modifier.padding(14.dp)) {
                 Icon(Icons.Outlined.Info, null, tint = MarketOrange)
                 Text(
-                    if (state.locationPermissionGranted) {
+                    if (state.authorizationStatus == PickupAuthorizationStatus.Authorized) {
+                        state.authorizationMessage
+                    } else if (state.locationPermissionGranted) {
                         stringResource(R.string.pickup_requirements_granted)
                     } else {
                         stringResource(R.string.pickup_requirements_denied)
@@ -152,6 +165,24 @@ fun PickupScreen(
                     modifier = Modifier.padding(start = 10.dp),
                 )
             }
+        }
+        Spacer(Modifier.height(14.dp))
+        Button(
+            onClick = { onOpenQrScanner(state.orderCode) },
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        ) {
+            Icon(Icons.Outlined.QrCodeScanner, null)
+            Text(
+                text = if (state.authorizationStatus == PickupAuthorizationStatus.Authorized) {
+                    stringResource(R.string.pickup_scan_again)
+                } else {
+                    stringResource(R.string.pickup_scan_qr)
+                },
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
         Spacer(Modifier.weight(1f))
         Button(

@@ -21,6 +21,10 @@ sealed class PokeMarketDestination(
     data object Cart : PokeMarketDestination("cart", R.string.nav_cart, Icons.Outlined.ShoppingBag)
     data object Profile : PokeMarketDestination("profile", R.string.nav_profile, Icons.Outlined.Person)
     data object Pickup : PokeMarketDestination("pickup", R.string.nav_pickup, Icons.Outlined.LocationOn)
+    data object QrScanner : PokeMarketDestination("pickup/scan/{orderCode}", R.string.nav_qr_scanner) {
+        const val orderCodeArgument = "orderCode"
+        fun createRoute(orderCode: String) = "pickup/scan/$orderCode"
+    }
     data object Detail : PokeMarketDestination("detail/{cardId}", R.string.nav_detail) {
         fun createRoute(cardId: Int) = "detail/$cardId"
     }

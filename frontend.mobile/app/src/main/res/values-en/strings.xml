@@ -128,4 +128,25 @@
     <string name="cart_cancel_quantity">Cancel</string>
     <string name="cart_loading">Loading cart...</string>
     <string name="cart_error_invalid_quantity">Enter a valid quantity greater than zero</string>
+    <string name="nav_qr_scanner">Pickup QR</string>
+    <string name="pickup_order_number">ORDER #%1$s</string>
+    <string name="pickup_authorized_label">QR VERIFIED</string>
+    <string name="pickup_scan_qr">SCAN PICKUP QR</string>
+    <string name="pickup_scan_again">SCAN AGAIN</string>
+    <string name="qr_scanner_back">Back</string>
+    <string name="qr_scanner_title">Pickup QR scanner</string>
+    <string name="qr_scanner_subtitle">Expected order: %1$s</string>
+    <string name="qr_scanner_preparing">Preparing camera...</string>
+    <string name="qr_scanner_permission_denied_title">Camera permission required</string>
+    <string name="qr_scanner_permission_denied_message">We need camera access to validate the pickup authorization QR.</string>
+    <string name="qr_scanner_permission_retry">Grant permission</string>
+    <string name="qr_scanner_instruction">Align the QR code inside the frame to validate pickup authorization.</string>
+    <string name="qr_scanner_frame_hint">Pickup QR</string>
+    <string name="qr_scanner_processing">Processing QR...</string>
+    <string name="qr_scanner_success_title">Valid QR</string>
+    <string name="qr_scanner_success_message">An authorized QR was detected: %1$s</string>
+    <string name="qr_scanner_use_result">Use this result</string>
+    <string name="qr_scanner_invalid_title">Invalid QR</string>
+    <string name="qr_scanner_invalid_message">The scanned QR does not belong to order %1$s. Read value: %2$s</string>
+    <string name="qr_scanner_retry">Scan again</string>
 </resources>

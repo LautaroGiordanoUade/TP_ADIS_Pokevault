@@ -8,6 +8,7 @@ import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pokevault.mobile.ui.feature.pickup.qr.PickupQrValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -28,15 +29,24 @@ data class PickupUiState(
     val destinationLatitude: Double = -34.618279,
     val destinationLongitude: Double = -58.381565,
     val destinationAddress: String = "Lima 757, Ciudad Autonoma de Buenos Aires, Argentina",
+    val orderCode: String = "PKM-A7X2",
+    val authorizationStatus: PickupAuthorizationStatus = PickupAuthorizationStatus.Pending,
+    val authorizationMessage: String = "",
 )
 
 sealed interface PickupEvent {
     data class OnPermissionResult(val granted: Boolean) : PickupEvent
     data object OnGetDirectionsClick : PickupEvent
+    data class OnQrAuthorizationResult(val rawValue: String) : PickupEvent
 }
 
 sealed interface PickupEffect {
     data class OpenDirections(val url: String) : PickupEffect
+}
+
+enum class PickupAuthorizationStatus {
+    Pending,
+    Authorized,
 }
 
 @HiltViewModel
@@ -68,6 +78,18 @@ class PickupViewModel @Inject constructor(
                     val originParam = originLocation?.let { "&origin=${it.latitude},${it.longitude}" }.orEmpty()
                     val url = "https://www.google.com/maps/dir/?api=1$originParam&destination=${state.destinationLatitude},${state.destinationLongitude}&travelmode=walking"
                     _effects.send(PickupEffect.OpenDirections(url))
+                }
+            }
+            is PickupEvent.OnQrAuthorizationResult -> {
+                val validation = PickupQrValidator.validate(
+                    rawValue = event.rawValue,
+                    expectedOrderCode = _uiState.value.orderCode,
+                )
+                _uiState.update {
+                    it.copy(
+                        authorizationStatus = PickupAuthorizationStatus.Authorized,
+                        authorizationMessage = "QR validado para la orden ${validation.normalizedValue}.",
+                    )
                 }
             }
         }

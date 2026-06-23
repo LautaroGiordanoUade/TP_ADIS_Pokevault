@@ -128,4 +128,25 @@
     <string name="cart_cancel_quantity">Cancelar</string>
     <string name="cart_loading">Cargando carrito...</string>
     <string name="cart_error_invalid_quantity">Ingresá una cantidad válida mayor a cero</string>
+    <string name="nav_qr_scanner">QR Retiro</string>
+    <string name="pickup_order_number">ORDEN #%1$s</string>
+    <string name="pickup_authorized_label">QR VALIDADO</string>
+    <string name="pickup_scan_qr">ESCANEAR QR DE RETIRO</string>
+    <string name="pickup_scan_again">REESCANEAR QR</string>
+    <string name="qr_scanner_back">Volver</string>
+    <string name="qr_scanner_title">Escaneo de QR de retiro</string>
+    <string name="qr_scanner_subtitle">Orden esperada: %1$s</string>
+    <string name="qr_scanner_preparing">Preparando cámara...</string>
+    <string name="qr_scanner_permission_denied_title">Permiso de cámara requerido</string>
+    <string name="qr_scanner_permission_denied_message">Necesitamos acceso a la cámara para validar el QR de autorización del retiro.</string>
+    <string name="qr_scanner_permission_retry">Dar permiso</string>
+    <string name="qr_scanner_instruction">Alineá el QR dentro del marco para validar la autorización.</string>
+    <string name="qr_scanner_frame_hint">QR de retiro</string>
+    <string name="qr_scanner_processing">Procesando QR...</string>
+    <string name="qr_scanner_success_title">QR válido</string>
+    <string name="qr_scanner_success_message">Se detectó un QR autorizado: %1$s</string>
+    <string name="qr_scanner_use_result">Usar este resultado</string>
+    <string name="qr_scanner_invalid_title">QR inválido</string>
+    <string name="qr_scanner_invalid_message">El QR escaneado no corresponde a la orden %1$s. Valor leído: %2$s</string>
+    <string name="qr_scanner_retry">Reintentar escaneo</string>
 </resources>
