@@ -19,6 +19,10 @@ private val Context.userPreferencesDataStore by preferencesDataStore(name = "use
 class PreferencesDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    val onboardingSeen: Flow<Boolean> = context.userPreferencesDataStore.data.map { preferences ->
+        preferences[Keys.OnboardingSeen] ?: false
+    }
+
     val session: Flow<UserSession> = context.userPreferencesDataStore.data.map { preferences ->
         UserSession(
             token = preferences[Keys.Token],
@@ -70,9 +74,21 @@ class PreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun markOnboardingSeen() {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[Keys.OnboardingSeen] = true
+        }
+    }
+
     suspend fun clearSession() {
         context.userPreferencesDataStore.edit { preferences ->
-            preferences.clear()
+            preferences.remove(Keys.Token)
+            preferences.remove(Keys.Id)
+            preferences.remove(Keys.Name)
+            preferences.remove(Keys.Email)
+            preferences.remove(Keys.AvatarUrl)
+            preferences.remove(Keys.Balance)
+            preferences.remove(Keys.IsVip)
         }
     }
 
@@ -84,6 +100,7 @@ class PreferencesDataSource @Inject constructor(
         val AvatarUrl = stringPreferencesKey("profile_avatar_url")
         val Balance = doublePreferencesKey("profile_balance")
         val IsVip = booleanPreferencesKey("profile_is_vip")
+        val OnboardingSeen = booleanPreferencesKey("onboarding_seen")
     }
 }
 

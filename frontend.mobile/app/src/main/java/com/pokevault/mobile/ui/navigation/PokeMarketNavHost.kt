@@ -28,6 +28,8 @@ import com.pokevault.mobile.ui.feature.cart.screen.CartScreen
 import com.pokevault.mobile.ui.feature.cart.viewmodel.CartViewModel
 import com.pokevault.mobile.ui.feature.detail.screen.DetailScreen
 import com.pokevault.mobile.ui.feature.home.screen.HomeScreen
+import com.pokevault.mobile.ui.feature.onboarding.screen.OnboardingGateScreen
+import com.pokevault.mobile.ui.feature.onboarding.screen.OnboardingScreen
 import com.pokevault.mobile.ui.feature.pickup.screen.PickupScreen
 import com.pokevault.mobile.ui.feature.profile.screen.ProfileScreen
 import com.pokevault.mobile.ui.feature.search.screen.SearchScreen
@@ -105,8 +107,29 @@ fun PokeMarketNavHost() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = PokeMarketDestination.Home.route,
+            startDestination = PokeMarketDestination.Splash.route,
         ) {
+            composable(PokeMarketDestination.Splash.route) {
+                OnboardingGateScreen(
+                    onResolved = { destinationRoute ->
+                        navController.navigate(destinationRoute) {
+                            popUpTo(PokeMarketDestination.Splash.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+            composable(PokeMarketDestination.Onboarding.route) {
+                OnboardingScreen(
+                    contentPadding = innerPadding,
+                    onFinished = {
+                        navController.navigate(PokeMarketDestination.Home.route) {
+                            popUpTo(PokeMarketDestination.Onboarding.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
             composable(PokeMarketDestination.Home.route) {
                 HomeScreen(
                     contentPadding = innerPadding,

@@ -77,7 +77,9 @@ class SearchViewModel @Inject constructor(
                     })
                 }
             }
-            is SearchEvent.OnAddToCart -> cartRepository.add(event.card)
+            is SearchEvent.OnAddToCart -> viewModelScope.launch {
+                cartRepository.add(event.card)
+            }
             SearchEvent.LoadNextPage -> loadNextPage()
         }
     }

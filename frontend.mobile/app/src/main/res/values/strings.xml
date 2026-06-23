@@ -32,12 +32,26 @@
     <string name="profile_language_cancel">Cancelar</string>
 
     <!-- Bottom Navigation -->
+    <string name="nav_splash">Carga</string>
+    <string name="nav_onboarding">Onboarding</string>
     <string name="nav_home">Inicio</string>
     <string name="nav_search">Buscar</string>
     <string name="nav_cart">Carrito</string>
     <string name="nav_profile">Ingresar</string>
     <string name="nav_pickup">Retiro</string>
     <string name="nav_detail">Detalle</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Saltar</string>
+    <string name="onboarding_back">Atrás</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_finish">Empezar</string>
+    <string name="onboarding_page_1_title">Bienvenido a PokeMarket</string>
+    <string name="onboarding_page_1_description">Explorá cartas coleccionables, seguí precios y encontrá rápido tus favoritas.</string>
+    <string name="onboarding_page_2_title">Guardá tu colección ideal</string>
+    <string name="onboarding_page_2_description">Marcá favoritos, revisá detalles y armá tu carrito sin perder el foco en lo importante.</string>
+    <string name="onboarding_page_3_title">Retirá con información clara</string>
+    <string name="onboarding_page_3_description">Consultá compras, ubicá el punto de retiro y usá la app con un flujo simple desde el primer día.</string>
 
     <!-- Card Component -->
     <string name="card_price_label">PRECIO</string>
@@ -106,4 +120,12 @@
     <string name="pickup_get_directions">CÓMO LLEGAR AL LOCAL</string>
     <string name="pickup_meters">%1$d metros</string>
     <string name="pickup_km">%1$s km</string>
+    <string name="cart_edit_quantity">Editar cantidad</string>
+    <string name="cart_edit_quantity_title">Editar cantidad del carrito</string>
+    <string name="cart_edit_quantity_message">Definí cuántas unidades querés guardar para %1$s.</string>
+    <string name="cart_edit_quantity_label">Cantidad</string>
+    <string name="cart_save_quantity">Guardar cantidad</string>
+    <string name="cart_cancel_quantity">Cancelar</string>
+    <string name="cart_loading">Cargando carrito...</string>
+    <string name="cart_error_invalid_quantity">Ingresá una cantidad válida mayor a cero</string>
 </resources>

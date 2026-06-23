@@ -32,12 +32,26 @@
     <string name="profile_language_cancel">Cancel</string>
 
     <!-- Bottom Navigation -->
+    <string name="nav_splash">Loading</string>
+    <string name="nav_onboarding">Onboarding</string>
     <string name="nav_home">Home</string>
     <string name="nav_search">Explore</string>
     <string name="nav_cart">Cart</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_pickup">Pickup</string>
     <string name="nav_detail">Detail</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_finish">Start</string>
+    <string name="onboarding_page_1_title">Welcome to PokeMarket</string>
+    <string name="onboarding_page_1_description">Browse collectible cards, track prices, and quickly find your favorites.</string>
+    <string name="onboarding_page_2_title">Build your ideal collection</string>
+    <string name="onboarding_page_2_description">Save favorites, inspect details, and prepare your cart with a focused flow.</string>
+    <string name="onboarding_page_3_title">Pick up with clear guidance</string>
+    <string name="onboarding_page_3_description">Review purchases, locate the pickup point, and start using the app with confidence.</string>
 
     <!-- Card Component -->
     <string name="card_price_label">PRICE</string>
@@ -106,4 +120,12 @@
     <string name="pickup_get_directions">GET DIRECTIONS</string>
     <string name="pickup_meters">%1$d meters</string>
     <string name="pickup_km">%1$s km</string>
+    <string name="cart_edit_quantity">Edit quantity</string>
+    <string name="cart_edit_quantity_title">Edit cart quantity</string>
+    <string name="cart_edit_quantity_message">Choose how many units you want to keep for %1$s.</string>
+    <string name="cart_edit_quantity_label">Quantity</string>
+    <string name="cart_save_quantity">Save quantity</string>
+    <string name="cart_cancel_quantity">Cancel</string>
+    <string name="cart_loading">Loading cart...</string>
+    <string name="cart_error_invalid_quantity">Enter a valid quantity greater than zero</string>
 </resources>

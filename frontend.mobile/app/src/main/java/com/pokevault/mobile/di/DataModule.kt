@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.pokevault.mobile.BuildConfig
 import com.pokevault.mobile.data.local.PokeMarketDatabase
+import com.pokevault.mobile.data.repository.PersistedCartRepository
 import com.pokevault.mobile.data.remote.AuthApi
 import com.pokevault.mobile.data.remote.AuthInterceptor
 import com.pokevault.mobile.data.remote.OrderApi
@@ -12,7 +13,6 @@ import com.pokevault.mobile.data.remote.VaultApi
 import com.pokevault.mobile.data.repository.DefaultOrderRepository
 import com.pokevault.mobile.data.repository.DefaultPokemonRepository
 import com.pokevault.mobile.data.repository.DefaultProfileRepository
-import com.pokevault.mobile.data.repository.InMemoryCartRepository
 import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.OrderRepository
 import com.pokevault.mobile.domain.repository.PokemonRepository
@@ -35,7 +35,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
     @Binds abstract fun bindPokemonRepository(repository: DefaultPokemonRepository): PokemonRepository
-    @Binds abstract fun bindCartRepository(repository: InMemoryCartRepository): CartRepository
+    @Binds abstract fun bindCartRepository(repository: PersistedCartRepository): CartRepository
     @Binds abstract fun bindProfileRepository(repository: DefaultProfileRepository): ProfileRepository
     @Binds abstract fun bindOrderRepository(repository: DefaultOrderRepository): OrderRepository
 }
@@ -55,6 +55,9 @@ object DataModule {
 
     @Provides
     fun provideOrderDao(database: PokeMarketDatabase) = database.orderDao()
+
+    @Provides
+    fun provideCartDao(database: PokeMarketDatabase) = database.cartDao()
 
     @Provides
     @Singleton

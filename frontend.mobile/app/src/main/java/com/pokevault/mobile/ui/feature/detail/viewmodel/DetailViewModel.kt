@@ -76,7 +76,9 @@ class DetailViewModel @Inject constructor(
 
     fun onAddToCart() {
         val currentCard = _uiState.value.card ?: return
-        cartRepository.add(currentCard)
+        viewModelScope.launch {
+            cartRepository.add(currentCard)
+        }
     }
 
     fun refresh() {

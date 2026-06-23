@@ -72,8 +72,10 @@ class HomeViewModel @Inject constructor(
                 refresh()
             }
             is HomeEvent.OnAddToCart -> {
-                cartRepository.add(event.card)
-                viewModelScope.launch { _effects.send(HomeEffect.ShowSnackbar("Carta agregada al carrito")) }
+                viewModelScope.launch {
+                    cartRepository.add(event.card)
+                    _effects.send(HomeEffect.ShowSnackbar("Carta agregada al carrito"))
+                }
             }
             is HomeEvent.OnCardClick -> Unit
         }

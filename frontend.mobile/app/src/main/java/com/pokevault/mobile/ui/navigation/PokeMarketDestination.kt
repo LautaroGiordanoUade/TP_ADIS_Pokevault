@@ -14,6 +14,8 @@ sealed class PokeMarketDestination(
     val labelRes: Int,
     val icon: ImageVector? = null,
 ) {
+    data object Splash : PokeMarketDestination("splash", R.string.nav_splash)
+    data object Onboarding : PokeMarketDestination("onboarding", R.string.nav_onboarding)
     data object Home : PokeMarketDestination("home", R.string.nav_home, Icons.Outlined.Home)
     data object Search : PokeMarketDestination("search", R.string.nav_search, Icons.Outlined.Explore)
     data object Cart : PokeMarketDestination("cart", R.string.nav_cart, Icons.Outlined.ShoppingBag)

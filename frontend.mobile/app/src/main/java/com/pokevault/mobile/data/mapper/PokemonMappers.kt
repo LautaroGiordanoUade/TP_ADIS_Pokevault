@@ -2,9 +2,11 @@ package com.pokevault.mobile.data.mapper
 
 import com.pokevault.mobile.data.local.PokemonEntity
 import com.pokevault.mobile.data.local.OrderEntity
+import com.pokevault.mobile.data.local.CartEntity
 import com.pokevault.mobile.data.remote.OrderDto
 import com.pokevault.mobile.data.remote.PokemonDto
 import com.pokevault.mobile.data.remote.UserDto
+import com.pokevault.mobile.domain.model.CartItem
 import com.pokevault.mobile.domain.model.Order
 import com.pokevault.mobile.domain.model.OrderStatus
 import com.pokevault.mobile.domain.model.PokemonCard
@@ -76,6 +78,42 @@ fun PokemonCard.toEntity(): PokemonEntity =
         artist = artist,
         source = source,
         isFavorite = isFavorite,
+    )
+
+fun PokemonCard.toCartEntity(quantity: Int): CartEntity =
+    CartEntity(
+        id = id,
+        externalId = externalId,
+        name = name,
+        imageUrl = imageUrl,
+        rarity = rarity,
+        price = price,
+        description = description,
+        types = types.joinToString(separator = "|"),
+        setName = setName,
+        number = number,
+        artist = artist,
+        source = source,
+        quantity = quantity,
+    )
+
+fun CartEntity.toDomain(): CartItem =
+    CartItem(
+        card = PokemonCard(
+            id = id,
+            externalId = externalId,
+            name = name,
+            imageUrl = imageUrl,
+            rarity = rarity,
+            price = price,
+            description = description,
+            types = types.split("|").filter { it.isNotBlank() },
+            setName = setName,
+            number = number,
+            artist = artist,
+            source = source,
+        ),
+        quantity = quantity,
     )
 
 fun UserDto.toDomain(): UserProfile =

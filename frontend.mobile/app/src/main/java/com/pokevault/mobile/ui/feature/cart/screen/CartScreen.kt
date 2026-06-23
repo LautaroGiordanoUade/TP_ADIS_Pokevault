@@ -19,27 +19,34 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.CartItem
@@ -74,7 +81,9 @@ fun CartContent(
     contentPadding: PaddingValues,
     onEvent: (CartEvent) -> Unit,
 ) {
-    if (state.items.isEmpty()) {
+    if (state.isLoading) {
+        LoadingCart()
+    } else if (state.items.isEmpty()) {
         EmptyCart(onExploreCards = { onEvent(CartEvent.OnExploreCards) })
     } else {
         Column(modifier = Modifier
@@ -92,6 +101,7 @@ fun CartContent(
                         item = item,
                         onIncrement = { onEvent(CartEvent.OnIncrement(item.card.id)) },
                         onDecrement = { onEvent(CartEvent.OnDecrement(item.card.id)) },
+                        onEdit = { onEvent(CartEvent.OnEditQuantity(item)) },
                         onRemove = { onEvent(CartEvent.OnRemove(item.card.id)) },
                     )
                 }
@@ -103,6 +113,17 @@ fun CartContent(
             )
         }
     }
+
+    state.editingItem?.let { editingItem ->
+        QuantityEditorDialog(
+            item = editingItem,
+            quantityInput = state.editingQuantityInput,
+            validationMessage = state.errorMessage,
+            onValueChange = { onEvent(CartEvent.OnQuantityInputChanged(it)) },
+            onDismiss = { onEvent(CartEvent.OnDismissQuantityEditor) },
+            onSave = { onEvent(CartEvent.OnSaveEditedQuantity) },
+        )
+    }
 }
 
 @Composable
@@ -110,6 +131,7 @@ private fun CartItemRow(
     item: CartItem,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
+    onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     OutlinedCard(border = BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp)) {
@@ -146,6 +168,7 @@ private fun CartItemRow(
             Column(horizontalAlignment = Alignment.End) {
                 Text(stringResource(R.string.cart_item_total), color = Muted, style = MaterialTheme.typography.labelSmall)
                 Text((item.card.price * item.quantity).money(), fontWeight = FontWeight.ExtraBold)
+                IconButton(onClick = onEdit) { Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.cart_edit_quantity), tint = Muted) }
                 IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.cart_remove), tint = Muted) }
             }
         }
@@ -187,12 +210,75 @@ private fun CheckoutPanel(
             Icon(Icons.Outlined.Security, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
         }
         state.errorMessage?.let { message ->
-            val displayError = if (message == "No se pudo confirmar la compra") {
-                stringResource(R.string.cart_error_confirm_payment)
-            } else {
-                message
+            val displayError = when (message) {
+                "No se pudo confirmar la compra" -> stringResource(R.string.cart_error_confirm_payment)
+                "Ingresá una cantidad válida mayor a cero" -> stringResource(R.string.cart_error_invalid_quantity)
+                else -> message
             }
             Text(displayError, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun QuantityEditorDialog(
+    item: CartItem,
+    quantityInput: String,
+    validationMessage: String?,
+    onValueChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.cart_edit_quantity_title),
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(R.string.cart_edit_quantity_message, item.card.name))
+                OutlinedTextField(
+                    value = quantityInput,
+                    onValueChange = onValueChange,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    label = { Text(stringResource(R.string.cart_edit_quantity_label)) },
+                )
+                if (validationMessage == "IngresÃ¡ una cantidad vÃ¡lida mayor a cero") {
+                    Text(
+                        text = stringResource(R.string.cart_error_invalid_quantity),
+                        color = Color(0xFFB00020),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onSave,
+                colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
+            ) {
+                Text(stringResource(R.string.cart_save_quantity), fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cart_cancel_quantity))
+            }
+        },
+        containerColor = Color.White,
+    )
+}
+
+@Composable
+private fun LoadingCart() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            CircularProgressIndicator(color = MarketOrange)
+            Text(stringResource(R.string.cart_loading), color = Muted)
         }
     }
 }
