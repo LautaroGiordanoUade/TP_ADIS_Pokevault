@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -43,9 +44,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
@@ -69,8 +70,6 @@ import com.pokevault.mobile.ui.feature.profile.state.ProfileEffect
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEvent
 import com.pokevault.mobile.ui.feature.profile.state.ProfileUiState
 import com.pokevault.mobile.ui.feature.profile.viewmodel.ProfileViewModel
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun ProfileScreen(
@@ -164,22 +163,29 @@ private fun LoginContent(
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier.size(46.dp).clip(CircleShape).background(MarketOrange),
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+                .clearAndSetSemantics { },
             contentAlignment = Alignment.Center,
         ) {
-            Text("P", fontWeight = FontWeight.ExtraBold)
+            Text("P", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.ExtraBold)
         }
         Spacer(Modifier.height(14.dp))
         Text(text = stringResource(R.string.profile_login_title), fontWeight = FontWeight.ExtraBold)
         Text(
             text = stringResource(R.string.profile_login_subtitle),
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(vertical = 10.dp),
         )
         Button(
             onClick = { onEvent(ProfileEvent.OnGoogleLoginClick) },
             enabled = !state.isLoading,
-            colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
@@ -197,7 +203,7 @@ private fun LoginContent(
                 "No se pudo actualizar el historial" -> stringResource(R.string.profile_login_error_refresh_failed)
                 else -> message
             }
-            Text(displayError, color = Color(0xFFB00020), modifier = Modifier.padding(top = 12.dp))
+            Text(displayError, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 12.dp))
         }
     }
 }
@@ -219,25 +225,42 @@ private fun ProfileContent(
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier.size(72.dp).clip(CircleShape).background(Color(0xFFE8E8EA)),
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clearAndSetSemantics { },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.Black, modifier = Modifier.size(42.dp))
+                    Icon(
+                        Icons.Outlined.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(42.dp),
+                    )
                 }
                 Text(state.profile?.name.orEmpty(), fontWeight = FontWeight.ExtraBold)
-                Text(state.profile?.email.orEmpty().uppercase(), color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    state.profile?.email.orEmpty().uppercase(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall,
+                )
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier.padding(top = 14.dp),
                 ) {
                     Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.AccountBalanceWallet, null, tint = MarketOrange)
+                        Icon(Icons.Outlined.AccountBalanceWallet, null, tint = MaterialTheme.colorScheme.primary)
                         Column(modifier = Modifier.padding(horizontal = 14.dp)) {
-                            Text(text = stringResource(R.string.profile_account_title), color = Muted, style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                text = stringResource(R.string.profile_account_title),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
                             Text("Google", fontWeight = FontWeight.ExtraBold)
                         }
-                        Text("VIP", color = MarketOrange, style = MaterialTheme.typography.labelSmall)
+                        Text("VIP", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
@@ -250,11 +273,11 @@ private fun ProfileContent(
                 Text(
                     text = stringResource(R.string.profile_settings_title),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Muted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 OutlinedCard(
-                    border = BorderStroke(1.dp, Color.Black),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -273,7 +296,7 @@ private fun ProfileContent(
                             )
                             Text(
                                 text = if (state.currentLanguage == "es") "Español" else "English",
-                                color = Muted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -281,7 +304,7 @@ private fun ProfileContent(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -311,11 +334,11 @@ private fun ProfileContent(
                                 Text(
                                     text = stringResource(R.string.profile_language_spanish),
                                     fontWeight = if (state.currentLanguage == "es") FontWeight.ExtraBold else FontWeight.Normal,
-                                    color = if (state.currentLanguage == "es") MarketOrange else Color.Unspecified,
+                                    color = if (state.currentLanguage == "es") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.weight(1f)
                                 )
                                 if (state.currentLanguage == "es") {
-                                    Text("✓", color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                                    Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                             Row(
@@ -331,11 +354,11 @@ private fun ProfileContent(
                                 Text(
                                     text = stringResource(R.string.profile_language_english),
                                     fontWeight = if (state.currentLanguage == "en") FontWeight.ExtraBold else FontWeight.Normal,
-                                    color = if (state.currentLanguage == "en") MarketOrange else Color.Unspecified,
+                                    color = if (state.currentLanguage == "en") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.weight(1f)
                                 )
                                 if (state.currentLanguage == "en") {
-                                    Text("✓", color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                                    Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
@@ -345,12 +368,11 @@ private fun ProfileContent(
                         TextButton(onClick = { showLanguageDialog = false }) {
                             Text(
                                 text = stringResource(R.string.profile_language_cancel),
-                                color = Color.Black,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     },
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(12.dp)
                 )
             }
@@ -381,7 +403,7 @@ private fun ProfileContent(
 
 @Composable
 private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
-    OutlinedCard(border = BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp)) {
+    OutlinedCard(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shape = RoundedCornerShape(8.dp)) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             val isDelivered = order.statusId == 2 || order.status == OrderStatus.Delivered
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -394,23 +416,26 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
                     Spacer(Modifier.weight(1f))
                     Text(
                         text = stringResource(R.string.profile_to_pickup),
-                        color = MarketOrange,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }
             }
             Row {
-                Text("${order.title} x${order.quantity}", color = Muted)
+                Text("${order.title} x${order.quantity}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
                 Text(order.amount.money())
             }
             if (!isDelivered) {
-                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3DE)), border = BorderStroke(1.dp, MarketOrange)) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                ) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = stringResource(R.string.profile_ready_to_pickup), 
-                            color = MarketOrange, 
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold, 
                             modifier = Modifier.weight(1f)
                         )

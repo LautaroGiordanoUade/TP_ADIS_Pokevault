@@ -46,8 +46,6 @@ import com.pokevault.mobile.ui.feature.home.state.HomeEffect
 import com.pokevault.mobile.ui.feature.home.state.HomeEvent
 import com.pokevault.mobile.ui.feature.home.state.HomeUiState
 import com.pokevault.mobile.ui.feature.home.viewmodel.HomeViewModel
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun HomeScreen(
@@ -118,15 +116,19 @@ fun HomeContent(
             Text(
                 buildAnnotatedString {
                     append("Poke")
-                    withStyle(SpanStyle(color = MarketOrange)) { append("Market") }
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) { append("Market") }
                 },
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.weight(1f))
-            Text(stringResource(R.string.home_catalog_title), color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(
+                stringResource(R.string.home_catalog_title),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.home_catalog_subtitle), color = Muted)
+        Text(stringResource(R.string.home_catalog_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = state.query,
@@ -141,11 +143,11 @@ fun HomeContent(
         Row {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.weight(1f))
-            Text(subtitle, color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(10.dp))
         if (state.isLoading && state.cards.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = MarketOrange)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.primary)
         } else if (state.isLoggedIn && state.favorites.isEmpty()) {
             EmptyFavorites(modifier = Modifier.weight(1f))
         } else if (state.cards.isEmpty()) {
@@ -182,10 +184,10 @@ private fun EmptySearchResults(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(Icons.Outlined.Search, contentDescription = null, tint = Muted)
+        Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(10.dp))
         Text(stringResource(R.string.home_no_results_title), style = MaterialTheme.typography.labelSmall)
-        Text(stringResource(R.string.home_no_results_subtitle), color = Muted)
+        Text(stringResource(R.string.home_no_results_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -196,9 +198,9 @@ private fun EmptyFavorites(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = Muted)
+        Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(10.dp))
         Text(stringResource(R.string.home_no_favorites_title), style = MaterialTheme.typography.labelSmall)
-        Text(stringResource(R.string.home_no_favorites_subtitle), color = Muted)
+        Text(stringResource(R.string.home_no_favorites_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

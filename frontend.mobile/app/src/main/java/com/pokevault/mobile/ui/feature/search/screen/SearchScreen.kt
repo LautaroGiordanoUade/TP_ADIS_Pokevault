@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,8 +48,6 @@ import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
 import com.pokevault.mobile.ui.feature.search.state.SearchUiState
 import com.pokevault.mobile.ui.feature.search.viewmodel.SearchViewModel
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun SearchScreen(
@@ -131,8 +128,8 @@ fun SearchContent(
                 onClick = { onEvent(SearchEvent.OnToggleFilters) },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (state.filtersVisible) MarketOrange else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (state.filtersVisible) Color.Black else MaterialTheme.colorScheme.onSurface,
+                    containerColor = if (state.filtersVisible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (state.filtersVisible) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                 ),
                 modifier = Modifier.height(56.dp),
             ) {
@@ -172,7 +169,7 @@ fun SearchContent(
                 if (state.isLoading && state.cards.isNotEmpty()) {
                     item {
                         Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = MarketOrange, modifier = Modifier.size(24.dp))
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                         }
                     }
                 }
@@ -181,7 +178,7 @@ fun SearchContent(
             if (state.isLoading && state.cards.isEmpty()) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = MarketOrange
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -189,7 +186,7 @@ fun SearchContent(
                 Text(
                     stringResource(R.string.search_no_results),
                     modifier = Modifier.align(Alignment.Center),
-                    color = Muted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -213,7 +210,7 @@ private fun FilterPanel(state: SearchUiState) {
 @Composable
 private fun FilterValue(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
-        Text(label, color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         OutlinedButton(onClick = {}, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
             Text(value, maxLines = 1, style = MaterialTheme.typography.labelSmall)
         }

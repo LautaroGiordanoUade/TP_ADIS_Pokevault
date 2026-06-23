@@ -121,6 +121,8 @@
     <string name="pickup_meters">%1$d meters</string>
     <string name="pickup_km">%1$s km</string>
     <string name="cart_edit_quantity">Edit quantity</string>
+    <string name="cart_increase_quantity">Increase quantity of %1$s</string>
+    <string name="cart_decrease_quantity">Decrease quantity of %1$s</string>
     <string name="cart_edit_quantity_title">Edit cart quantity</string>
     <string name="cart_edit_quantity_message">Choose how many units you want to keep for %1$s.</string>
     <string name="cart_edit_quantity_label">Quantity</string>
@@ -133,6 +135,7 @@
     <string name="pickup_authorized_label">QR VERIFIED</string>
     <string name="pickup_scan_qr">SCAN PICKUP QR</string>
     <string name="pickup_scan_again">SCAN AGAIN</string>
+    <string name="pickup_close">Close pickup</string>
     <string name="qr_scanner_back">Back</string>
     <string name="qr_scanner_title">Pickup QR scanner</string>
     <string name="qr_scanner_subtitle">Expected order: %1$s</string>
@@ -141,6 +144,7 @@
     <string name="qr_scanner_permission_denied_message">We need camera access to validate the pickup authorization QR.</string>
     <string name="qr_scanner_permission_retry">Grant permission</string>
     <string name="qr_scanner_instruction">Align the QR code inside the frame to validate pickup authorization.</string>
+    <string name="qr_scanner_camera_preview">Camera preview for QR scanning</string>
     <string name="qr_scanner_frame_hint">Pickup QR</string>
     <string name="qr_scanner_processing">Processing QR...</string>
     <string name="qr_scanner_success_title">Valid QR</string>

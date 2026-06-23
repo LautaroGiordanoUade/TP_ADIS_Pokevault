@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -40,18 +39,8 @@ import com.pokevault.mobile.ui.feature.components.CardArt
 import com.pokevault.mobile.ui.feature.components.money
 import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailEffect
 import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailViewModel
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
+import com.pokevault.mobile.ui.theme.FavoritePink
 
-// TODO Jetpack Compose & Arquitectura MVVM:
-// 1. Cadenas de texto hardcodeadas: Cadenas de texto tales como "ESTÁS VIENDO:", "PRECIO FINAL" y "AGREGAR AL CARRITO"
-//    están codificadas directamente. Deben moverse al archivo de recursos strings.xml.
-// 2. Colores fijos: Se definen colores directamente en el Composable como Color(0xFFFF2F68) para el corazón de favoritos,
-//    y Color.Black.copy(...) para el sombreado o bordes. Esto rompe la consistencia estética del tema oscuro/claro de Material 3.
-//    Se deben definir estos colores en ui/theme/Theme.kt o ui/theme/Color.kt y consumirlos mediante MaterialTheme.colorScheme.
-// 3. Lógica de Ciclo de Vida: El uso de DisposableEffect para añadir/remover el LifecycleEventObserver y gatillar
-//    'viewModel.refresh()' en el evento ON_RESUME es correcto, pero se podría encapsular en un efecto secundario
-//    reutilizable o manejar a través del repositorio reactivo si los flujos fuesen completamente calientes y observables.
 @Composable
 fun DetailScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -82,12 +71,12 @@ fun DetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(top = contentPadding.calculateTopPadding()),
         contentAlignment = Alignment.Center
     ) {
         if (state.isLoading) {
-            CircularProgressIndicator(color = MarketOrange)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         } else {
             state.card?.let { card ->
                 DetailContent(
@@ -108,6 +97,8 @@ private fun DetailContent(
     onFavoriteClick: () -> Unit,
     onAddToCart: () -> Unit
 ) {
+    val outlineColor = MaterialTheme.colorScheme.outline
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -121,7 +112,7 @@ private fun DetailContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             CardArt(
                 card = card,
@@ -138,14 +129,14 @@ private fun DetailContent(
                     .padding(16.dp)
                     .size(42.dp)
                     .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.45f)),
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.82f)),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
                         imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = null,
-                        tint = if (card.isFavorite) Color(0xFFFF2F68) else Color.White,
+                        contentDescription = stringResource(R.string.card_favorite_desc),
+                        tint = if (card.isFavorite) FavoritePink else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -153,7 +144,7 @@ private fun DetailContent(
         }
 
         Spacer(Modifier.height(20.dp))
-        HorizontalDivider(thickness = 1.dp, color = Color.Black.copy(alpha = 0.1f))
+        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
         Spacer(Modifier.height(20.dp))
 
         // Caja de descripción con borde punteado (como en la imagen)
@@ -162,7 +153,7 @@ private fun DetailContent(
                 .fillMaxWidth()
                 .drawBehind {
                     drawRoundRect(
-                        color = Color.Black.copy(alpha = 0.15f),
+                        color = outlineColor,
                         style = Stroke(
                             width = 2f,
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 12f), 0f)
@@ -175,7 +166,7 @@ private fun DetailContent(
             Text(
                 text = "\"${card.description ?: stringResource(R.string.detail_fallback_description, card.name)}\"",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black.copy(alpha = 0.85f),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontStyle = FontStyle.Italic,
                 lineHeight = 22.sp
             )
@@ -193,7 +184,7 @@ private fun DetailContent(
                 Text(
                     stringResource(R.string.detail_viewing),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -209,12 +200,12 @@ private fun DetailContent(
                     text = card.price.money(),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     stringResource(R.string.detail_price_final),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -230,8 +221,8 @@ private fun DetailContent(
                 .height(64.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MarketOrange,
-                contentColor = Color.Black
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
         ) {

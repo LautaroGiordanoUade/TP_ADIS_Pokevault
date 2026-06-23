@@ -15,14 +15,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pokevault.mobile.ui.feature.onboarding.viewmodel.OnboardingGateViewModel
-import com.pokevault.mobile.ui.theme.Ink
-import com.pokevault.mobile.ui.theme.MarketOrange
 
 @Composable
 fun OnboardingGateScreen(
@@ -40,7 +37,10 @@ fun OnboardingGateScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFFFF4E8), Color.White)
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.background,
+                    )
                 )
             ),
         contentAlignment = Alignment.Center,
@@ -53,10 +53,10 @@ fun OnboardingGateScreen(
             Text(
                 text = "PokeMarket",
                 style = MaterialTheme.typography.titleLarge,
-                color = Ink,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.ExtraBold,
             )
-            CircularProgressIndicator(color = MarketOrange)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     }
 }

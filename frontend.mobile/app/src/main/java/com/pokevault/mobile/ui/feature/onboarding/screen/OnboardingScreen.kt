@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,9 +37,6 @@ import com.pokevault.mobile.R
 import com.pokevault.mobile.ui.feature.onboarding.state.OnboardingEffect
 import com.pokevault.mobile.ui.feature.onboarding.state.OnboardingEvent
 import com.pokevault.mobile.ui.feature.onboarding.viewmodel.OnboardingViewModel
-import com.pokevault.mobile.ui.theme.Ink
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun OnboardingScreen(
@@ -65,7 +61,10 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFFFF7ED), Color.White)
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.background,
+                    )
                 )
             )
             .padding(contentPadding),
@@ -94,7 +93,7 @@ fun OnboardingScreen(
                     .fillMaxWidth()
                     .weight(1f),
                 shape = RoundedCornerShape(28.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.dp,
             ) {
                 Column(
@@ -107,13 +106,13 @@ fun OnboardingScreen(
                     Box(
                         modifier = Modifier
                             .size(96.dp)
-                            .background(color = Color(0xFFFFE0B2), shape = CircleShape),
+                            .background(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = page.imageVector,
                             contentDescription = stringResource(page.titleRes),
-                            tint = MarketOrange,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(44.dp),
                         )
                     }
@@ -121,7 +120,7 @@ fun OnboardingScreen(
                     Text(
                         text = stringResource(page.titleRes),
                         style = MaterialTheme.typography.titleLarge,
-                        color = Ink,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center,
                     )
@@ -129,7 +128,7 @@ fun OnboardingScreen(
                     Text(
                         text = stringResource(page.descriptionRes),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Muted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -148,7 +147,11 @@ fun OnboardingScreen(
                             .padding(horizontal = 4.dp)
                             .size(width = if (isSelected) 28.dp else 10.dp, height = 10.dp)
                             .background(
-                                color = if (isSelected) MarketOrange else Color(0xFFFFE0B2),
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                },
                                 shape = RoundedCornerShape(999.dp),
                             )
                     )
@@ -174,8 +177,8 @@ fun OnboardingScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MarketOrange,
-                        contentColor = Color.Black,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
                     Text(

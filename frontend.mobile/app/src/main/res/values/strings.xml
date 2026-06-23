@@ -121,6 +121,8 @@
     <string name="pickup_meters">%1$d metros</string>
     <string name="pickup_km">%1$s km</string>
     <string name="cart_edit_quantity">Editar cantidad</string>
+    <string name="cart_increase_quantity">Aumentar cantidad de %1$s</string>
+    <string name="cart_decrease_quantity">Disminuir cantidad de %1$s</string>
     <string name="cart_edit_quantity_title">Editar cantidad del carrito</string>
     <string name="cart_edit_quantity_message">Definí cuántas unidades querés guardar para %1$s.</string>
     <string name="cart_edit_quantity_label">Cantidad</string>
@@ -133,6 +135,7 @@
     <string name="pickup_authorized_label">QR VALIDADO</string>
     <string name="pickup_scan_qr">ESCANEAR QR DE RETIRO</string>
     <string name="pickup_scan_again">REESCANEAR QR</string>
+    <string name="pickup_close">Cerrar retiro</string>
     <string name="qr_scanner_back">Volver</string>
     <string name="qr_scanner_title">Escaneo de QR de retiro</string>
     <string name="qr_scanner_subtitle">Orden esperada: %1$s</string>
@@ -141,6 +144,7 @@
     <string name="qr_scanner_permission_denied_message">Necesitamos acceso a la cámara para validar el QR de autorización del retiro.</string>
     <string name="qr_scanner_permission_retry">Dar permiso</string>
     <string name="qr_scanner_instruction">Alineá el QR dentro del marco para validar la autorización.</string>
+    <string name="qr_scanner_camera_preview">Vista previa de cámara para escanear QR</string>
     <string name="qr_scanner_frame_hint">QR de retiro</string>
     <string name="qr_scanner_processing">Procesando QR...</string>
     <string name="qr_scanner_success_title">QR válido</string>

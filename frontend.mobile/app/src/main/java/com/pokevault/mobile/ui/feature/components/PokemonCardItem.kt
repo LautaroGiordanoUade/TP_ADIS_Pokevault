@@ -25,15 +25,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.PokemonCard
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
+import com.pokevault.mobile.ui.theme.FavoritePink
 
 @Composable
 fun PokemonCardItem(
@@ -47,9 +45,9 @@ fun PokemonCardItem(
         modifier = modifier,
         onClick = { onCardClick(card.id) },
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color(0xFFE7E7EA)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row(verticalAlignment = Alignment.Top) {
@@ -62,7 +60,7 @@ fun PokemonCardItem(
                 )
                 Text(
                     text = card.rarity.orEmpty().take(10),
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1,
                 )
@@ -72,21 +70,25 @@ fun PokemonCardItem(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.card_price_label), color = Muted, style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        stringResource(R.string.card_price_label),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
                     Text(card.price.money(), fontWeight = FontWeight.ExtraBold)
                 }
                 IconButton(onClick = { onFavoriteClick(card) }, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = stringResource(R.string.card_favorite_desc),
-                        tint = if (card.isFavorite) Color(0xFFFF2F68) else Muted,
+                        tint = if (card.isFavorite) FavoritePink else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 IconButton(onClick = { onAddToCart(card) }, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.ShoppingBag,
                         contentDescription = stringResource(R.string.card_add_to_cart_desc),
-                        tint = MarketOrange,
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
                 OutlinedButton(
@@ -95,7 +97,12 @@ fun PokemonCardItem(
                     modifier = Modifier.height(32.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
                 ) {
-                    Icon(Icons.Outlined.Info, contentDescription = null, tint = MarketOrange, modifier = Modifier.size(13.dp))
+                    Icon(
+                        Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(13.dp),
+                    )
                     Text(stringResource(R.string.card_detail_button), style = MaterialTheme.typography.labelSmall)
                 }
             }

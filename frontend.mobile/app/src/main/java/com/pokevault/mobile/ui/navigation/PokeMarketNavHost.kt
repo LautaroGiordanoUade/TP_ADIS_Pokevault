@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,8 +37,6 @@ import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupEvent
 import com.pokevault.mobile.ui.feature.pickup.viewmodel.PickupViewModel
 import com.pokevault.mobile.ui.feature.profile.screen.ProfileScreen
 import com.pokevault.mobile.ui.feature.search.screen.SearchScreen
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun PokeMarketNavHost() {
@@ -59,7 +56,7 @@ fun PokeMarketNavHost() {
 
             if (isBottomDest || isDetail) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     bottomDestinations.forEach { screen ->
@@ -79,7 +76,10 @@ fun PokeMarketNavHost() {
                                 BadgedBox(
                                     badge = {
                                         if (screen == PokeMarketDestination.Cart && cartState.totalQuantity > 0) {
-                                            Badge(containerColor = MarketOrange, contentColor = Color.Black) {
+                                            Badge(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                            ) {
                                                 Text(cartState.totalQuantity.toString())
                                             }
                                         }
@@ -89,11 +89,11 @@ fun PokeMarketNavHost() {
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Color.Black,
-                                selectedTextColor = Color.Black,
-                                indicatorColor = MarketOrange,
-                                unselectedIconColor = Muted,
-                                unselectedTextColor = Muted
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                indicatorColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             onClick = {
                                 navController.navigate(screen.route) {

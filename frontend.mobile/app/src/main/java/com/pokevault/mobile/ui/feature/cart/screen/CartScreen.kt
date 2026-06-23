@@ -40,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
@@ -55,8 +54,6 @@ import com.pokevault.mobile.ui.feature.cart.state.CartUiState
 import com.pokevault.mobile.ui.feature.cart.viewmodel.CartViewModel
 import com.pokevault.mobile.ui.feature.components.CardArt
 import com.pokevault.mobile.ui.feature.components.money
-import com.pokevault.mobile.ui.theme.MarketOrange
-import com.pokevault.mobile.ui.theme.Muted
 
 @Composable
 fun CartScreen(
@@ -95,7 +92,13 @@ fun CartContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(top = 18.dp, bottom = 18.dp),
             ) {
-                item { Text(stringResource(R.string.cart_items_selected, state.totalQuantity), color = Muted, style = MaterialTheme.typography.labelSmall) }
+                item {
+                    Text(
+                        stringResource(R.string.cart_items_selected, state.totalQuantity),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
                 items(state.items, key = { it.card.id }) { item ->
                     CartItemRow(
                         item = item,
@@ -134,7 +137,7 @@ private fun CartItemRow(
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    OutlinedCard(border = BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp)) {
+    OutlinedCard(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shape = RoundedCornerShape(8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -156,20 +159,46 @@ private fun CartItemRow(
                 )
                 Text(
                     stringResource(R.string.cart_unit_price, item.card.price.money()),
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall,
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onDecrement, modifier = Modifier.size(32.dp)) { Icon(Icons.Outlined.Remove, null) }
+                    IconButton(onClick = onDecrement, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Outlined.Remove,
+                            contentDescription = stringResource(R.string.cart_decrease_quantity, item.card.name),
+                        )
+                    }
                     Text(item.quantity.toString(), fontWeight = FontWeight.Bold)
-                    IconButton(onClick = onIncrement, modifier = Modifier.size(32.dp)) { Icon(Icons.Outlined.Add, null) }
+                    IconButton(onClick = onIncrement, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.cart_increase_quantity, item.card.name),
+                        )
+                    }
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(stringResource(R.string.cart_item_total), color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    stringResource(R.string.cart_item_total),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall,
+                )
                 Text((item.card.price * item.quantity).money(), fontWeight = FontWeight.ExtraBold)
-                IconButton(onClick = onEdit) { Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.cart_edit_quantity), tint = Muted) }
-                IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.cart_remove), tint = Muted) }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.cart_edit_quantity),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        Icons.Outlined.Delete,
+                        contentDescription = stringResource(R.string.cart_remove),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
@@ -188,21 +217,31 @@ private fun CheckoutPanel(
             .padding(bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(stringResource(R.string.cart_delivery_address_label), color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(
+            stringResource(R.string.cart_delivery_address_label),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmall,
+        )
         OutlinedCard(shape = RoundedCornerShape(6.dp), modifier = Modifier.fillMaxWidth()) {
             Text(state.deliveryAddress, modifier = Modifier.padding(12.dp))
         }
-        Card(colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Color.Black)) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row { Text(stringResource(R.string.cart_subtotal_label), color = Muted); Spacer(Modifier.weight(1f)); Text(state.subtotal.money()) }
-                Row { Text(stringResource(R.string.cart_shipping_label), color = Muted); Spacer(Modifier.weight(1f)); Text(stringResource(R.string.cart_shipping_free)) }
+                Row { Text(stringResource(R.string.cart_subtotal_label), color = MaterialTheme.colorScheme.onSurfaceVariant); Spacer(Modifier.weight(1f)); Text(state.subtotal.money()) }
+                Row { Text(stringResource(R.string.cart_shipping_label), color = MaterialTheme.colorScheme.onSurfaceVariant); Spacer(Modifier.weight(1f)); Text(stringResource(R.string.cart_shipping_free)) }
                 Row { Text(stringResource(R.string.cart_final_total_label), fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text(state.finalTotal.money(), fontWeight = FontWeight.ExtraBold) }
             }
         }
         Button(
             onClick = onConfirm,
             enabled = !state.isSubmitting,
-            colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
@@ -215,7 +254,7 @@ private fun CheckoutPanel(
                 "Ingresá una cantidad válida mayor a cero" -> stringResource(R.string.cart_error_invalid_quantity)
                 else -> message
             }
-            Text(displayError, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
+            Text(displayError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -250,7 +289,7 @@ private fun QuantityEditorDialog(
                 if (validationMessage == "IngresÃ¡ una cantidad vÃ¡lida mayor a cero") {
                     Text(
                         text = stringResource(R.string.cart_error_invalid_quantity),
-                        color = Color(0xFFB00020),
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }
@@ -259,7 +298,10 @@ private fun QuantityEditorDialog(
         confirmButton = {
             Button(
                 onClick = onSave,
-                colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             ) {
                 Text(stringResource(R.string.cart_save_quantity), fontWeight = FontWeight.Bold)
             }
@@ -269,7 +311,7 @@ private fun QuantityEditorDialog(
                 Text(stringResource(R.string.cart_cancel_quantity))
             }
         },
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
     )
 }
 
@@ -277,8 +319,8 @@ private fun QuantityEditorDialog(
 private fun LoadingCart() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            CircularProgressIndicator(color = MarketOrange)
-            Text(stringResource(R.string.cart_loading), color = Muted)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.cart_loading), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -288,13 +330,21 @@ private fun EmptyCart(onExploreCards: () -> Unit) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedCard(shape = RoundedCornerShape(50)) {
-                Icon(Icons.Outlined.ShoppingBag, contentDescription = null, tint = Muted, modifier = Modifier.padding(14.dp).size(36.dp))
+                Icon(
+                    Icons.Outlined.ShoppingBag,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(14.dp).size(36.dp),
+                )
             }
             Text(stringResource(R.string.cart_empty_title), fontWeight = FontWeight.ExtraBold)
-            Text(stringResource(R.string.cart_empty_subtitle), color = Muted)
+            Text(stringResource(R.string.cart_empty_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(
                 onClick = onExploreCards,
-                colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
                 shape = RoundedCornerShape(8.dp),
             ) {
                 Text(stringResource(R.string.cart_explore), fontWeight = FontWeight.ExtraBold)
