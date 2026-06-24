@@ -3,6 +3,10 @@
 This repository currently contains the migrated backend in `backend.Api/`.
 Python FastAPI structure inside `backend.Api/` while preserving PokeVault API behavior:
 
+## Documentacion de entrega
+
+- [Documentacion final de entrega y defensa](docs/entrega-final.md)
+
 - `GET /api/pokemon`
 - `GET /api/pokemon/{pokemon_id}`
 - `POST /api/pokemon/sync`
