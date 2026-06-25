@@ -21,6 +21,8 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,7 +33,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +51,7 @@ import com.pokevault.mobile.R
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
 import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
+import com.pokevault.mobile.ui.feature.search.state.SearchFilterOptions
 import com.pokevault.mobile.ui.feature.search.state.SearchUiState
 import com.pokevault.mobile.ui.feature.search.viewmodel.SearchViewModel
 import com.pokevault.mobile.ui.theme.MarketOrange
@@ -143,7 +148,7 @@ fun SearchContent(
 
         if (state.filtersVisible) {
             Spacer(Modifier.height(14.dp))
-            FilterPanel(state)
+            FilterPanel(state, onEvent)
         }
 
         Spacer(Modifier.height(14.dp))
@@ -197,25 +202,77 @@ fun SearchContent(
 }
 
 @Composable
-private fun FilterPanel(state: SearchUiState) {
+private fun FilterPanel(state: SearchUiState, onEvent: (SearchEvent) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterValue(stringResource(R.string.search_filter_type), state.selectedType, Modifier.weight(1f))
-            FilterValue(stringResource(R.string.search_filter_rarity), state.selectedRarity, Modifier.weight(1f))
+            FilterValue(
+                label = stringResource(R.string.search_filter_type),
+                value = state.selectedType,
+                options = state.availableTypes,
+                modifier = Modifier.weight(1f),
+                onSelected = { onEvent(SearchEvent.OnTypeSelected(it)) },
+            )
+            FilterValue(
+                label = stringResource(R.string.search_filter_rarity),
+                value = state.selectedRarity,
+                options = state.availableRarities,
+                modifier = Modifier.weight(1f),
+                onSelected = { onEvent(SearchEvent.OnRaritySelected(it)) },
+            )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterValue(stringResource(R.string.search_filter_price), state.selectedPrice, Modifier.weight(1f))
-            FilterValue(stringResource(R.string.search_filter_sort), state.selectedSort, Modifier.weight(1f))
+            FilterValue(
+                label = stringResource(R.string.search_filter_price),
+                value = state.selectedPrice,
+                options = SearchFilterOptions.priceOptions,
+                modifier = Modifier.weight(1f),
+                onSelected = { onEvent(SearchEvent.OnPriceSelected(it)) },
+            )
+            FilterValue(
+                label = stringResource(R.string.search_filter_sort),
+                value = state.selectedSort,
+                options = SearchFilterOptions.sortOptions,
+                modifier = Modifier.weight(1f),
+                onSelected = { onEvent(SearchEvent.OnSortSelected(it)) },
+            )
         }
     }
 }
 
 @Composable
-private fun FilterValue(label: String, value: String, modifier: Modifier = Modifier) {
+private fun FilterValue(
+    label: String,
+    value: String,
+    options: List<String>,
+    modifier: Modifier = Modifier,
+    onSelected: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         Text(label, color = Muted, style = MaterialTheme.typography.labelSmall)
-        OutlinedButton(onClick = {}, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
-            Text(value, maxLines = 1, style = MaterialTheme.typography.labelSmall)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { expanded = true },
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(value, maxLines = 1, style = MaterialTheme.typography.labelSmall)
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option, style = MaterialTheme.typography.labelSmall) },
+                        onClick = {
+                            expanded = false
+                            onSelected(option)
+                        },
+                    )
+                }
+            }
         }
     }
 }

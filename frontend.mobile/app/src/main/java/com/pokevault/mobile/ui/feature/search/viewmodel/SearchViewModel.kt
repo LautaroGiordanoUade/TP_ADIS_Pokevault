@@ -2,11 +2,15 @@ package com.pokevault.mobile.ui.feature.search.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pokevault.mobile.domain.model.PokemonCard
 import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.PokemonRepository
 import com.pokevault.mobile.domain.repository.ProfileRepository
+import com.pokevault.mobile.ui.feature.search.state.SearchCriteria
 import com.pokevault.mobile.ui.feature.search.state.SearchEffect
 import com.pokevault.mobile.ui.feature.search.state.SearchEvent
+import com.pokevault.mobile.ui.feature.search.state.SearchFilterEngine
+import com.pokevault.mobile.ui.feature.search.state.SearchFilterOptions
 import com.pokevault.mobile.ui.feature.search.state.SearchUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +35,12 @@ class SearchViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val profileRepository: ProfileRepository,
 ) : ViewModel() {
+    private data class SearchPageResult(
+        val items: List<PokemonCard>,
+        val hasMore: Boolean,
+        val sourceCards: List<PokemonCard>,
+    )
+
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<SearchEffect>(Channel.BUFFERED)
@@ -65,6 +75,10 @@ class SearchViewModel @Inject constructor(
                 resetAndSearch(event.query)
             }
             SearchEvent.OnToggleFilters -> _uiState.update { it.copy(filtersVisible = !it.filtersVisible) }
+            is SearchEvent.OnTypeSelected -> updateFilters { copy(selectedType = event.value) }
+            is SearchEvent.OnRaritySelected -> updateFilters { copy(selectedRarity = event.value) }
+            is SearchEvent.OnPriceSelected -> updateFilters { copy(selectedPrice = event.value) }
+            is SearchEvent.OnSortSelected -> updateFilters { copy(selectedSort = event.value) }
             is SearchEvent.OnFavoriteClick -> viewModelScope.launch {
                 if (!profileRepository.isLoggedIn.first()) {
                     _effects.send(SearchEffect.NavigateToLogin)
@@ -106,17 +120,81 @@ class SearchViewModel @Inject constructor(
 
         _uiState.update { it.copy(isLoading = true) }
         try {
-            val results = pokemonRepository.listCards(query = query, page = page, pageSize = 15)
-            _uiState.update {
-                it.copy(
-                    cards = if (page == 1) results else it.cards + results,
-                    isLoading = false
+            val result = loadPageResult(query = query, page = page)
+            _uiState.update { state ->
+                state.copy(
+                    cards = if (page == 1) result.items else state.cards + result.items,
+                    isLoading = false,
+                    availableTypes = SearchFilterOptions.availableTypeOptions(result.sourceCards, state.selectedType),
+                    availableRarities = SearchFilterOptions.availableRarityOptions(result.sourceCards, state.selectedRarity),
                 )
             }
-            isLastPage = results.isEmpty()
+            isLastPage = !result.hasMore
         } catch (e: Exception) {
             _uiState.update { it.copy(isLoading = false) }
         }
+    }
+
+    private fun updateFilters(update: SearchUiState.() -> SearchUiState) {
+        _uiState.update(update)
+        resetAndSearch(_uiState.value.query)
+    }
+
+    private suspend fun loadPageResult(query: String, page: Int): SearchPageResult {
+        val criteria = _uiState.value.toCriteria(query)
+        return if (criteria.hasActiveLocalFilters()) {
+            loadFilteredPage(criteria = criteria, page = page, pageSize = 15)
+        } else {
+            val items = pokemonRepository.listCards(query = query, page = page, pageSize = 15)
+            SearchPageResult(
+                items = items,
+                hasMore = items.size == 15,
+                sourceCards = items,
+            )
+        }
+    }
+
+    private suspend fun loadFilteredPage(criteria: SearchCriteria, page: Int, pageSize: Int): SearchPageResult {
+        val pageStart = (page - 1) * pageSize
+        val pageEndExclusive = pageStart + pageSize
+        val requiredItems = pageEndExclusive + 1
+        val backendPageSize = 60
+        val aggregatedCards = mutableListOf<PokemonCard>()
+
+        var backendPage = 1
+        var reachedEnd = false
+
+        while (!reachedEnd) {
+            val backendItems = pokemonRepository.listCards(
+                query = criteria.query,
+                page = backendPage,
+                pageSize = backendPageSize,
+            )
+
+            if (backendItems.isEmpty()) {
+                reachedEnd = true
+                break
+            }
+
+            aggregatedCards += backendItems
+
+            if (SearchFilterEngine.apply(aggregatedCards, criteria).size >= requiredItems) {
+                break
+            }
+
+            if (backendItems.size < backendPageSize) {
+                reachedEnd = true
+            } else {
+                backendPage++
+            }
+        }
+
+        val filteredCards = SearchFilterEngine.apply(aggregatedCards, criteria)
+        return SearchPageResult(
+            items = filteredCards.drop(pageStart).take(pageSize),
+            hasMore = filteredCards.size > pageEndExclusive || !reachedEnd,
+            sourceCards = aggregatedCards,
+        )
     }
 
     private fun loadNextPage() {
@@ -127,4 +205,13 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    private fun SearchUiState.toCriteria(queryOverride: String = query): SearchCriteria =
+        SearchCriteria(
+            query = queryOverride,
+            selectedType = selectedType,
+            selectedRarity = selectedRarity,
+            selectedPrice = selectedPrice,
+            selectedSort = selectedSort,
+        )
 }

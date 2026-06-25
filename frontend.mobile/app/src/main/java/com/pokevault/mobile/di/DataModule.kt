@@ -17,6 +17,8 @@ import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.OrderRepository
 import com.pokevault.mobile.domain.repository.PokemonRepository
 import com.pokevault.mobile.domain.repository.ProfileRepository
+import com.pokevault.mobile.ui.feature.pickup.location.AndroidPickupLocationClient
+import com.pokevault.mobile.ui.feature.pickup.location.PickupLocationClient
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Binds
@@ -38,6 +40,7 @@ abstract class RepositoryModule {
     @Binds abstract fun bindCartRepository(repository: InMemoryCartRepository): CartRepository
     @Binds abstract fun bindProfileRepository(repository: DefaultProfileRepository): ProfileRepository
     @Binds abstract fun bindOrderRepository(repository: DefaultOrderRepository): OrderRepository
+    @Binds abstract fun bindPickupLocationClient(repository: AndroidPickupLocationClient): PickupLocationClient
 }
 
 @Module
