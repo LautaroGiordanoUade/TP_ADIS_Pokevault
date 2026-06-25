@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -31,6 +33,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,6 +63,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.pokevault.mobile.BuildConfig
@@ -226,7 +232,17 @@ private fun ProfileContent(
                     modifier = Modifier.size(72.dp).clip(CircleShape).background(AvatarBackground),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.Black, modifier = Modifier.size(42.dp))
+                    val avatarUrl = state.profile?.avatarUrl
+                    if (!avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = avatarUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.Black, modifier = Modifier.size(42.dp))
+                    }
                 }
                 Text(state.profile?.name.orEmpty(), fontWeight = FontWeight.ExtraBold)
                 Text(state.profile?.email.orEmpty().uppercase(), color = Muted, style = MaterialTheme.typography.labelSmall)
@@ -256,9 +272,51 @@ private fun ProfileContent(
                     style = MaterialTheme.typography.labelSmall,
                     color = Muted
                 )
-                
+
+                // Dark mode toggle
                 OutlinedCard(
-                    border = BorderStroke(1.dp, Color.Black),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val darkEnabled = state.isDarkMode ?: false
+                        Icon(
+                            imageVector = if (darkEnabled) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+                            contentDescription = null,
+                            tint = MarketOrange,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column(modifier = Modifier.weight(1f).padding(horizontal = 14.dp)) {
+                            Text(
+                                text = stringResource(R.string.profile_dark_mode_label),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (darkEnabled) stringResource(R.string.profile_dark_mode_on) else stringResource(R.string.profile_dark_mode_off),
+                                color = Muted,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Switch(
+                            checked = darkEnabled,
+                            onCheckedChange = { onEvent(ProfileEvent.OnDarkModeChanged(it)) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.Black,
+                                checkedTrackColor = MarketOrange,
+                            )
+                        )
+                    }
+                }
+
+                // Language selector
+                OutlinedCard(
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -285,7 +343,7 @@ private fun ProfileContent(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -349,12 +407,11 @@ private fun ProfileContent(
                         TextButton(onClick = { showLanguageDialog = false }) {
                             Text(
                                 text = stringResource(R.string.profile_language_cancel),
-                                color = Color.Black,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     },
-                    containerColor = Color.White,
                     shape = RoundedCornerShape(12.dp)
                 )
             }

@@ -30,6 +30,9 @@
     <string name="profile_language_spanish">Español</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_cancel">Cancel</string>
+    <string name="profile_dark_mode_label">Dark Mode</string>
+    <string name="profile_dark_mode_on">Enabled</string>
+    <string name="profile_dark_mode_off">Disabled</string>
 
     <!-- Bottom Navigation -->
     <string name="nav_home">Home</string>

@@ -3,6 +3,7 @@ package com.pokevault.mobile.ui.feature.profile.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pokevault.mobile.data.local.LanguageManager
+import com.pokevault.mobile.data.local.ThemeManager
 import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.ProfileRepository
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEffect
@@ -24,15 +25,21 @@ class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val cartRepository: CartRepository,
     private val languageManager: LanguageManager,
+    private val themeManager: ThemeManager,
 ) : ViewModel() {
     private val screenState = MutableStateFlow(ProfileUiState())
     private val _effects = Channel<ProfileEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    val uiState = combine(screenState, profileRepository.profile) { state, profile ->
+    val uiState = combine(
+        screenState,
+        profileRepository.profile,
+        themeManager.isDarkMode
+    ) { state, profile, isDarkMode ->
         state.copy(
             profile = profile,
-            currentLanguage = languageManager.getCurrentLanguage()
+            currentLanguage = languageManager.getCurrentLanguage(),
+            isDarkMode = isDarkMode,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
@@ -66,6 +73,9 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.OnLanguageChanged -> {
                 languageManager.setLanguage(event.languageCode)
                 screenState.update { it.copy(currentLanguage = event.languageCode) }
+            }
+            is ProfileEvent.OnDarkModeChanged -> viewModelScope.launch {
+                themeManager.setDarkMode(event.enabled)
             }
         }
     }
