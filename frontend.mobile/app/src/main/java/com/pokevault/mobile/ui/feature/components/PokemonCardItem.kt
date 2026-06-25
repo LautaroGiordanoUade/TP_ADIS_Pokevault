@@ -1,6 +1,7 @@
 package com.pokevault.mobile.ui.feature.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -32,8 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.PokemonCard
+import com.pokevault.mobile.ui.theme.CardBorder
+import com.pokevault.mobile.ui.theme.FavoriteRed
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
+import com.pokevault.mobile.util.money
 
 @Composable
 fun PokemonCardItem(
@@ -49,7 +54,7 @@ fun PokemonCardItem(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color(0xFFE7E7EA)),
+        border = BorderStroke(1.dp, CardBorder),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row(verticalAlignment = Alignment.Top) {
@@ -70,34 +75,47 @@ fun PokemonCardItem(
             Spacer(Modifier.height(8.dp))
             CardArt(card = card, modifier = Modifier.fillMaxWidth().aspectRatio(1.1f))
             Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
                     Text(stringResource(R.string.card_price_label), color = Muted, style = MaterialTheme.typography.labelSmall)
-                    Text(card.price.money(), fontWeight = FontWeight.ExtraBold)
-                }
-                IconButton(onClick = { onFavoriteClick(card) }, modifier = Modifier.size(36.dp)) {
-                    Icon(
-                        imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = stringResource(R.string.card_favorite_desc),
-                        tint = if (card.isFavorite) Color(0xFFFF2F68) else Muted,
+                    Text(
+                        text = card.price.money(),
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
-                IconButton(onClick = { onAddToCart(card) }, modifier = Modifier.size(36.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingBag,
-                        contentDescription = stringResource(R.string.card_add_to_cart_desc),
-                        tint = MarketOrange,
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { onFavoriteClick(card) }, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = stringResource(R.string.card_favorite_desc),
+                            tint = if (card.isFavorite) FavoriteRed else Muted,
+                        )
+                    }
+                    IconButton(onClick = { onAddToCart(card) }, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            imageVector = Icons.Outlined.ShoppingBag,
+                            contentDescription = stringResource(R.string.card_add_to_cart_desc),
+                            tint = MarketOrange,
+                        )
+                    }
                 }
-                OutlinedButton(
-                    onClick = { onCardClick(card.id) },
-                    shape = RoundedCornerShape(6.dp),
-                    modifier = Modifier.height(32.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
-                ) {
-                    Icon(Icons.Outlined.Info, contentDescription = null, tint = MarketOrange, modifier = Modifier.size(13.dp))
-                    Text(stringResource(R.string.card_detail_button), style = MaterialTheme.typography.labelSmall)
-                }
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { onCardClick(card.id) },
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.fillMaxWidth().height(32.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+            ) {
+                Icon(Icons.Outlined.Info, contentDescription = null, tint = MarketOrange, modifier = Modifier.size(13.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.card_detail_button), style = MaterialTheme.typography.labelSmall)
             }
         }
     }

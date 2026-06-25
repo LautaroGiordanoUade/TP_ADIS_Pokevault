@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,6 +52,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.NoCredentialException
+import androidx.activity.compose.LocalActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -64,13 +64,16 @@ import com.pokevault.mobile.BuildConfig
 import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.Order
 import com.pokevault.mobile.domain.model.OrderStatus
-import com.pokevault.mobile.ui.feature.components.money
+import com.pokevault.mobile.util.money
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEffect
 import com.pokevault.mobile.ui.feature.profile.state.ProfileEvent
 import com.pokevault.mobile.ui.feature.profile.state.ProfileUiState
 import com.pokevault.mobile.ui.feature.profile.viewmodel.ProfileViewModel
+import com.pokevault.mobile.ui.theme.AvatarBackground
+import com.pokevault.mobile.ui.theme.ErrorRed
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
+import com.pokevault.mobile.ui.theme.VipBackground
 
 @Composable
 fun ProfileScreen(
@@ -79,8 +82,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val credentialManager = remember(context) { CredentialManager.create(context) }
+    val activity = LocalActivity.current
+    val credentialManager = remember(activity) { CredentialManager.create(activity!!) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
@@ -91,6 +94,7 @@ fun ProfileScreen(
                     runCatching {
                         credentialManager.clearCredentialState(ClearCredentialStateRequest())
                     }
+                    Unit
                 }
                 ProfileEffect.RequestGoogleSignIn -> {
                     if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
@@ -102,7 +106,7 @@ fun ProfileScreen(
                             val request = GetCredentialRequest.Builder()
                                 .addCredentialOption(googleIdOption)
                                 .build()
-                            val result = credentialManager.getCredential(context, request)
+                            val result = credentialManager.getCredential(activity!!, request)
                             GoogleIdTokenCredential.createFrom(result.credential.data).idToken
                         }.onSuccess { idToken ->
                             if (idToken.isBlank()) {
@@ -197,7 +201,7 @@ private fun LoginContent(
                 "No se pudo actualizar el historial" -> stringResource(R.string.profile_login_error_refresh_failed)
                 else -> message
             }
-            Text(displayError, color = Color(0xFFB00020), modifier = Modifier.padding(top = 12.dp))
+            Text(displayError, color = ErrorRed, modifier = Modifier.padding(top = 12.dp))
         }
     }
 }
@@ -219,7 +223,7 @@ private fun ProfileContent(
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier.size(72.dp).clip(CircleShape).background(Color(0xFFE8E8EA)),
+                    modifier = Modifier.size(72.dp).clip(CircleShape).background(AvatarBackground),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.Black, modifier = Modifier.size(42.dp))
@@ -403,10 +407,14 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
             Row {
                 Text("${order.title} x${order.quantity}", color = Muted)
                 Spacer(Modifier.weight(1f))
-                Text(order.amount.money())
+                Text(
+                    text = order.amount.money(),
+                    maxLines = 1,
+                    softWrap = false
+                )
             }
             if (!isDelivered) {
-                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3DE)), border = BorderStroke(1.dp, MarketOrange)) {
+                Card(colors = CardDefaults.cardColors(containerColor = VipBackground), border = BorderStroke(1.dp, MarketOrange)) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = stringResource(R.string.profile_ready_to_pickup), 
@@ -429,7 +437,9 @@ private fun OrderCard(order: Order, onPickupClick: () -> Unit) {
                     Text(
                         text = stringResource(R.string.profile_total, order.total.money()), 
                         fontWeight = FontWeight.ExtraBold, 
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }

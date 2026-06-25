@@ -47,7 +47,8 @@ import com.pokevault.mobile.ui.feature.cart.state.CartEvent
 import com.pokevault.mobile.ui.feature.cart.state.CartUiState
 import com.pokevault.mobile.ui.feature.cart.viewmodel.CartViewModel
 import com.pokevault.mobile.ui.feature.components.CardArt
-import com.pokevault.mobile.ui.feature.components.money
+import com.pokevault.mobile.util.money
+import com.pokevault.mobile.ui.theme.ErrorRed
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
 
@@ -133,9 +134,11 @@ private fun CartItemRow(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    stringResource(R.string.cart_unit_price, item.card.price.money()),
+                    text = stringResource(R.string.cart_unit_price, item.card.price.money()),
                     color = Muted,
                     style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    softWrap = false
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onDecrement, modifier = Modifier.size(32.dp)) { Icon(Icons.Outlined.Remove, null) }
@@ -145,7 +148,12 @@ private fun CartItemRow(
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(stringResource(R.string.cart_item_total), color = Muted, style = MaterialTheme.typography.labelSmall)
-                Text((item.card.price * item.quantity).money(), fontWeight = FontWeight.ExtraBold)
+                Text(
+                    text = (item.card.price * item.quantity).money(),
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    softWrap = false
+                )
                 IconButton(onClick = onRemove) { Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.cart_remove), tint = Muted) }
             }
         }
@@ -171,9 +179,30 @@ private fun CheckoutPanel(
         }
         Card(colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Color.Black)) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row { Text(stringResource(R.string.cart_subtotal_label), color = Muted); Spacer(Modifier.weight(1f)); Text(state.subtotal.money()) }
-                Row { Text(stringResource(R.string.cart_shipping_label), color = Muted); Spacer(Modifier.weight(1f)); Text(stringResource(R.string.cart_shipping_free)) }
-                Row { Text(stringResource(R.string.cart_final_total_label), fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text(state.finalTotal.money(), fontWeight = FontWeight.ExtraBold) }
+                Row {
+                    Text(stringResource(R.string.cart_subtotal_label), color = Muted)
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = state.subtotal.money(),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+                Row {
+                    Text(stringResource(R.string.cart_shipping_label), color = Muted)
+                    Spacer(Modifier.weight(1f))
+                    Text(stringResource(R.string.cart_shipping_free))
+                }
+                Row {
+                    Text(stringResource(R.string.cart_final_total_label), fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = state.finalTotal.money(),
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
             }
         }
         Button(
@@ -192,7 +221,7 @@ private fun CheckoutPanel(
             } else {
                 message
             }
-            Text(displayError, color = Color(0xFFB00020), style = MaterialTheme.typography.labelSmall)
+            Text(displayError, color = ErrorRed, style = MaterialTheme.typography.labelSmall)
         }
     }
 }

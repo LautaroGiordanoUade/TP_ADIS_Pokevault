@@ -37,9 +37,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pokevault.mobile.domain.model.PokemonCard
 import com.pokevault.mobile.ui.feature.components.CardArt
-import com.pokevault.mobile.ui.feature.components.money
+import com.pokevault.mobile.util.money
 import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailEffect
 import com.pokevault.mobile.ui.feature.detail.viewmodel.DetailViewModel
+import com.pokevault.mobile.ui.theme.FavoriteRed
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
 
@@ -145,7 +146,7 @@ private fun DetailContent(
                     Icon(
                         imageVector = if (card.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = null,
-                        tint = if (card.isFavorite) Color(0xFFFF2F68) else Color.White,
+                        tint = if (card.isFavorite) FavoriteRed else Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -209,7 +210,9 @@ private fun DetailContent(
                     text = card.price.money(),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black
+                    color = Color.Black,
+                    maxLines = 1,
+                    softWrap = false
                 )
                 Text(
                     stringResource(R.string.detail_price_final),
