@@ -85,6 +85,17 @@ class ProfileViewModel @Inject constructor(
             screenState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching {
                 profileRepository.loginWithGoogle(idToken)
+            }.onFailure { error ->
+                screenState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = error.message ?: "No se pudo iniciar sesion",
+                    )
+                }
+                return@launch
+            }
+            // Login OK — ahora cargamos pedidos (Room como fallback si no hay red)
+            runCatching {
                 profileRepository.getOrders()
             }.onSuccess { orders ->
                 screenState.update { it.copy(isLoading = false, orders = orders) }
@@ -102,8 +113,10 @@ class ProfileViewModel @Inject constructor(
     private fun refresh() {
         viewModelScope.launch {
             screenState.update { it.copy(errorMessage = null) }
+            // Intento silencioso de refrescar perfil desde el servidor (falla OK si no hay red)
+            runCatching { profileRepository.refreshProfile() }
+            // Siempre cargar pedidos: Room devuelve el caché si no hay conexión
             runCatching {
-                profileRepository.refreshProfile()
                 profileRepository.getOrders()
             }.onSuccess { orders ->
                 screenState.update { it.copy(orders = orders) }
