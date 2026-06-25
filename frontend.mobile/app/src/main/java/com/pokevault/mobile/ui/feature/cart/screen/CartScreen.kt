@@ -32,10 +32,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,14 +45,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pokevault.mobile.R
 import com.pokevault.mobile.domain.model.CartItem
+import com.pokevault.mobile.ui.feature.cart.state.CartEffect
 import com.pokevault.mobile.ui.feature.cart.state.CartEvent
 import com.pokevault.mobile.ui.feature.cart.state.CartUiState
 import com.pokevault.mobile.ui.feature.cart.viewmodel.CartViewModel
 import com.pokevault.mobile.ui.feature.components.CardArt
+import com.pokevault.mobile.util.PurchaseSoundPlayer
 import com.pokevault.mobile.util.money
 import com.pokevault.mobile.ui.theme.ErrorRed
 import com.pokevault.mobile.ui.theme.MarketOrange
 import com.pokevault.mobile.ui.theme.Muted
+import dagger.hilt.android.EntryPointAccessors
 
 @Composable
 fun CartScreen(
@@ -59,6 +64,22 @@ fun CartScreen(
     onExploreCards: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Colectamos effects una sola vez durante el ciclo de vida del Composable.
+    // LaunchedEffect(Unit) se cancela automáticamente cuando CartScreen sale de composición.
+    // El soundPlayer se resuelve UNA vez al inicio, no en cada efecto recibido.
+    LaunchedEffect(Unit) {
+        val soundPlayer = EntryPointAccessors
+            .fromApplication(context.applicationContext, SoundPlayerEntryPoint::class.java)
+            .purchaseSoundPlayer()
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                CartEffect.OrderPlaced -> soundPlayer.play()
+            }
+        }
+    }
+
     CartContent(
         state = state,
         contentPadding = contentPadding,

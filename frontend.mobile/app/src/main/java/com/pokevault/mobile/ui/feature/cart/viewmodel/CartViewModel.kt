@@ -4,13 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.OrderRepository
+import com.pokevault.mobile.ui.feature.cart.state.CartEffect
 import com.pokevault.mobile.ui.feature.cart.state.CartEvent
 import com.pokevault.mobile.ui.feature.cart.state.CartUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,6 +25,8 @@ class CartViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
 ) : ViewModel() {
     private val submitState = MutableStateFlow(CartUiState())
+    private val _effects = Channel<CartEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
 
     val uiState = combine(cartRepository.items, submitState) { items, state ->
         CartUiState(
@@ -53,6 +58,7 @@ class CartViewModel @Inject constructor(
             }.onSuccess {
                 cartRepository.clear()
                 submitState.update { it.copy(isSubmitting = false) }
+                _effects.send(CartEffect.OrderPlaced)
             }.onFailure { error ->
                 submitState.update {
                     it.copy(
@@ -62,5 +68,12 @@ class CartViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Cerrar el Channel evita que efectos en buffer queden retenidos en memoria
+        // si el ViewModel se destruye antes de que el Composable los consuma.
+        _effects.close()
     }
 }

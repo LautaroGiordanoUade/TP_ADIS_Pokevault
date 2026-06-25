@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -23,6 +24,10 @@ data class PickupUiState(
     val destinationLongitude: Double = -58.381565,
     val destinationAddress: String = "Lima 757, Ciudad Autonoma de Buenos Aires, Argentina",
 )
+
+/** Origen de fallback cuando el GPS no está disponible (Monroe y Av. Triunvirato, CABA) */
+private const val FALLBACK_ORIGIN_LAT = -34.5813
+private const val FALLBACK_ORIGIN_LNG = -58.4606
 
 sealed interface PickupEvent {
     data class OnPermissionResult(val granted: Boolean) : PickupEvent
@@ -63,13 +68,19 @@ class PickupViewModel @Inject constructor(
             PickupEvent.OnGetDirectionsClick -> {
                 viewModelScope.launch {
                     val state = _uiState.value
-                    val originLocation = if (state.locationPermissionGranted) {
-                        locationClient.getCurrentLocation()
+                    // Intentar obtener ubicación real con timeout de 3 s
+                    val gpsLocation = if (state.locationPermissionGranted) {
+                        withTimeoutOrNull(3_000L) { locationClient.getCurrentLocation() }
                     } else {
                         null
                     }
-                    val originParam = originLocation?.let { "&origin=${it.latitude},${it.longitude}" }.orEmpty()
-                    val url = "https://www.google.com/maps/dir/?api=1$originParam&destination=${state.destinationLatitude},${state.destinationLongitude}&travelmode=walking"
+                    // Si el GPS no responde (emulador / sin permiso / timeout) usar Monroe y Av. Triunvirato
+                    val originLat = gpsLocation?.latitude ?: FALLBACK_ORIGIN_LAT
+                    val originLng = gpsLocation?.longitude ?: FALLBACK_ORIGIN_LNG
+                    val url = "https://www.google.com/maps/dir/?api=1" +
+                        "&origin=$originLat,$originLng" +
+                        "&destination=${state.destinationLatitude},${state.destinationLongitude}" +
+                        "&travelmode=walking"
                     _effects.send(PickupEffect.OpenDirections(url))
                 }
             }

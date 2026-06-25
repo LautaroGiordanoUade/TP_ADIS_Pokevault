@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -117,44 +118,108 @@ fun PickupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF101116))
+            .background(MaterialTheme.colorScheme.background)
             .padding(contentPadding)
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Cerrar", tint = Color.White) }
+            IconButton(onClick = onClose) {
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = "Cerrar",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
             Column {
-                Text(stringResource(R.string.pickup_title), color = Color.White, fontWeight = FontWeight.ExtraBold)
-                Text(stringResource(R.string.pickup_order_number_demo), color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    stringResource(R.string.pickup_title),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                Text(
+                    stringResource(R.string.pickup_order_number_demo),
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
             Spacer(Modifier.weight(1f))
-            Text(stringResource(R.string.pickup_ready_label), color = MarketOrange, style = MaterialTheme.typography.labelSmall)
+            Text(
+                stringResource(R.string.pickup_ready_label),
+                color = MarketOrange,
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
         Spacer(Modifier.height(12.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(250.dp).background(Color(0xFF17181F), RoundedCornerShape(8.dp))) {
+
+        // El mapa siempre oscuro — convención estándar de mapas
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .background(Color(0xFF17181F), RoundedCornerShape(8.dp)),
+        ) {
             SimulatedMap(Modifier.fillMaxSize())
             Card(
-                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.Black),
+                colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.85f)),
                 shape = RoundedCornerShape(50),
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.dp),
             ) {
-                Text(stringResource(R.string.pickup_distance_format, distanceText), color = Color.White, modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp), style = MaterialTheme.typography.labelSmall)
+                Text(
+                    stringResource(R.string.pickup_distance_format, distanceText),
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
-            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MarketOrange, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 54.dp, top = 28.dp).size(42.dp))
+            Icon(
+                Icons.Outlined.LocationOn,
+                contentDescription = null,
+                tint = MarketOrange,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 54.dp, top = 28.dp)
+                    .size(42.dp),
+            )
         }
+
         Spacer(Modifier.height(18.dp))
         Row {
             Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.pickup_location_name), color = Color.White, fontWeight = FontWeight.ExtraBold)
-                Text(stringResource(R.string.pickup_location_building), color = Color.White)
-                Text(state.destinationAddress, color = MarketOrange, fontWeight = FontWeight.ExtraBold)
+                Text(
+                    stringResource(R.string.pickup_location_name),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                Text(
+                    stringResource(R.string.pickup_location_building),
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    state.destinationAddress,
+                    color = MarketOrange,
+                    fontWeight = FontWeight.ExtraBold,
+                )
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(stringResource(R.string.pickup_hours_label), color = Muted, style = MaterialTheme.typography.labelSmall)
-                Text(stringResource(R.string.pickup_hours), color = Color.White, fontWeight = FontWeight.ExtraBold)
+                Text(
+                    stringResource(R.string.pickup_hours_label),
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Text(
+                    stringResource(R.string.pickup_hours),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.ExtraBold,
+                )
             }
         }
-        Card(colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFF1C1D23)), modifier = Modifier.padding(top = 18.dp)) {
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier.padding(top = 18.dp),
+        ) {
             Row(modifier = Modifier.padding(14.dp)) {
                 Icon(Icons.Outlined.Info, null, tint = MarketOrange)
                 Text(
@@ -163,20 +228,27 @@ fun PickupScreen(
                     } else {
                         stringResource(R.string.pickup_requirements_denied)
                     },
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 10.dp),
                 )
             }
         }
+
         Spacer(Modifier.weight(1f))
         Button(
             onClick = { viewModel.onEvent(PickupEvent.OnGetDirectionsClick) },
             colors = ButtonDefaults.buttonColors(containerColor = MarketOrange, contentColor = Color.Black),
             shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
         ) {
             Icon(Icons.Outlined.Route, null)
-            Text(stringResource(R.string.pickup_get_directions), fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 8.dp))
+            Text(
+                stringResource(R.string.pickup_get_directions),
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
     }
 }

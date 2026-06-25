@@ -20,3 +20,8 @@ sealed interface CartEvent {
     data object OnConfirmPayment : CartEvent
     data object OnExploreCards : CartEvent
 }
+
+sealed interface CartEffect {
+    /** Emitido una sola vez cuando la compra se confirma exitosamente. */
+    data object OrderPlaced : CartEffect
+}
