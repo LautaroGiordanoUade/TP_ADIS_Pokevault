@@ -68,17 +68,14 @@ fun CartScreen(
 
     // Colectamos effects una sola vez durante el ciclo de vida del Composable.
     // LaunchedEffect(Unit) se cancela automáticamente cuando CartScreen sale de composición.
+    // El soundPlayer se resuelve UNA vez al inicio, no en cada efecto recibido.
     LaunchedEffect(Unit) {
+        val soundPlayer = EntryPointAccessors
+            .fromApplication(context.applicationContext, SoundPlayerEntryPoint::class.java)
+            .purchaseSoundPlayer()
         viewModel.effects.collect { effect ->
             when (effect) {
-                CartEffect.OrderPlaced -> {
-                    // Obtenemos el PurchaseSoundPlayer del grafo de Hilt sin pasar
-                    // contexto Android al ViewModel — patrón recomendado por Google.
-                    val soundPlayer = EntryPointAccessors
-                        .fromApplication(context.applicationContext, SoundPlayerEntryPoint::class.java)
-                        .purchaseSoundPlayer()
-                    soundPlayer.play()
-                }
+                CartEffect.OrderPlaced -> soundPlayer.play()
             }
         }
     }

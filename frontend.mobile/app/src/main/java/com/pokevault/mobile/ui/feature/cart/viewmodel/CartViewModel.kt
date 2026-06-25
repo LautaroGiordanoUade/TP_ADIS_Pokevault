@@ -69,4 +69,11 @@ class CartViewModel @Inject constructor(
             }
         }
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Cerrar el Channel evita que efectos en buffer queden retenidos en memoria
+        // si el ViewModel se destruye antes de que el Composable los consuma.
+        _effects.close()
+    }
 }
