@@ -17,6 +17,8 @@ import com.pokevault.mobile.domain.repository.CartRepository
 import com.pokevault.mobile.domain.repository.OrderRepository
 import com.pokevault.mobile.domain.repository.PokemonRepository
 import com.pokevault.mobile.domain.repository.ProfileRepository
+import com.pokevault.mobile.ui.feature.pickup.location.AndroidPickupLocationClient
+import com.pokevault.mobile.ui.feature.pickup.location.PickupLocationClient
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Binds
@@ -38,6 +40,7 @@ abstract class RepositoryModule {
     @Binds abstract fun bindCartRepository(repository: InMemoryCartRepository): CartRepository
     @Binds abstract fun bindProfileRepository(repository: DefaultProfileRepository): ProfileRepository
     @Binds abstract fun bindOrderRepository(repository: DefaultOrderRepository): OrderRepository
+    @Binds abstract fun bindPickupLocationClient(repository: AndroidPickupLocationClient): PickupLocationClient
 }
 
 @Module
@@ -68,43 +71,37 @@ object DataModule {
             .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
             .build()
 
+    /**
+     * Instancia de Retrofit compartida por todas las APIs del proyecto.
+     * La baseUrl, el cliente HTTP y el conversor se configuran una única vez aquí.
+     */
     @Provides
     @Singleton
-    fun providePokemonApi(moshi: Moshi, okHttpClient: OkHttpClient): PokemonApi =
+    fun provideRetrofit(moshi: Moshi, okHttpClient: OkHttpClient): Retrofit =
         Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-            .create(PokemonApi::class.java)
 
     @Provides
     @Singleton
-    fun provideAuthApi(moshi: Moshi, okHttpClient: OkHttpClient): AuthApi =
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-            .create(AuthApi::class.java)
+    fun providePokemonApi(retrofit: Retrofit): PokemonApi =
+        retrofit.create(PokemonApi::class.java)
 
     @Provides
     @Singleton
-    fun provideVaultApi(moshi: Moshi, okHttpClient: OkHttpClient): VaultApi =
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-            .create(VaultApi::class.java)
+    fun provideAuthApi(retrofit: Retrofit): AuthApi =
+        retrofit.create(AuthApi::class.java)
 
     @Provides
     @Singleton
-    fun provideOrderApi(moshi: Moshi, okHttpClient: OkHttpClient): OrderApi =
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-            .create(OrderApi::class.java)
+    fun provideVaultApi(retrofit: Retrofit): VaultApi =
+        retrofit.create(VaultApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideOrderApi(retrofit: Retrofit): OrderApi =
+        retrofit.create(OrderApi::class.java)
 }
+

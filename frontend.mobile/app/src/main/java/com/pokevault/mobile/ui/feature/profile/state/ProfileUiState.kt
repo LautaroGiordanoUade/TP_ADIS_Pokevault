@@ -9,6 +9,7 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val currentLanguage: String = "es",
+    val isDarkMode: Boolean? = null, // null = follow system
 )
 
 sealed interface ProfileEvent {
@@ -20,6 +21,7 @@ sealed interface ProfileEvent {
     data object OnLogoutClick : ProfileEvent
     data class OnPickupClick(val orderId: Int) : ProfileEvent
     data class OnLanguageChanged(val languageCode: String) : ProfileEvent
+    data class OnDarkModeChanged(val enabled: Boolean) : ProfileEvent
 }
 
 sealed interface ProfileEffect {

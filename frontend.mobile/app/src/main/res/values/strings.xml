@@ -30,6 +30,9 @@
     <string name="profile_language_spanish">Español</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_cancel">Cancelar</string>
+    <string name="profile_dark_mode_label">Modo Oscuro</string>
+    <string name="profile_dark_mode_on">Activado</string>
+    <string name="profile_dark_mode_off">Desactivado</string>
 
     <!-- Bottom Navigation -->
     <string name="nav_home">Inicio</string>
@@ -70,6 +73,8 @@
     <string name="home_gengar_title">GENGAR DESTACADOS</string>
     <string name="home_gengar_subtitle">Iniciá sesión para guardar favoritos</string>
     <string name="home_search_placeholder">Buscar Pikachu, Charizard...</string>
+    <string name="home_error_loading_title">NO PUDIMOS CARGAR LAS CARTAS</string>
+    <string name="home_error_loading_subtitle">No fue posible completar la operacion. Intenta nuevamente.</string>
     <string name="home_no_results_title">NO SE ENCONTRARON CARTAS</string>
     <string name="home_no_results_subtitle">Probá buscar por nombre, rareza, set o artista.</string>
     <string name="home_no_favorites_title">TODAVÍA NO TENÉS FAVORITOS</string>

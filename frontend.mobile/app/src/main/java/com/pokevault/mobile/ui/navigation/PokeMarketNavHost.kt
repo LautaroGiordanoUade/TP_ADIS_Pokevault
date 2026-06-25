@@ -52,7 +52,7 @@ fun PokeMarketNavHost() {
 
             if (isBottomDest || isDetail) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     bottomDestinations.forEach { screen ->

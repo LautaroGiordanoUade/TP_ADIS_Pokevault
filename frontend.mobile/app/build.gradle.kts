@@ -51,7 +51,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lgiordano.pokemarket"
+        applicationId = "com.pokevault.mobile"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -130,4 +130,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }
