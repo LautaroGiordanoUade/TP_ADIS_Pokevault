@@ -1,4 +1,4 @@
-package com.pokevault.mobile.ui.feature.home.viewmodel
+﻿package com.pokevault.mobile.ui.feature.home.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,8 +39,8 @@ class HomeViewModel @Inject constructor(
         val filteredCards = sourceCards.filterByQuery(state.query)
         state.copy(
             cards = filteredCards,
-            title = "", // Se computa dinámicamente en la vista (HomeScreen) para localización
-            subtitle = "", // Se computa dinámicamente en la vista (HomeScreen) para localización
+            title = "", // Se computa dinÃ¡micamente en la vista (HomeScreen) para localizaciÃ³n
+            subtitle = "", // Se computa dinÃ¡micamente en la vista (HomeScreen) para localizaciÃ³n
             isLoggedIn = isLoggedIn,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
@@ -101,7 +101,7 @@ class HomeViewModel @Inject constructor(
                             errorMessage = error.message ?: "No se pudo cargar el inicio",
                         )
                     }
-                    _effects.send(HomeEffect.ShowSnackbar("No se pudo sincronizar con el backend"))
+                    _effects.send(HomeEffect.ShowSnackbar("No fue posible completar la operacion. Intenta nuevamente."))
                 }
         }
     }

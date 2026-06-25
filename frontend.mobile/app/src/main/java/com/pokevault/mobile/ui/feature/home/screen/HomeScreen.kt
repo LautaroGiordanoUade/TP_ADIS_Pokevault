@@ -41,6 +41,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pokevault.mobile.R
+import com.pokevault.mobile.ui.feature.components.LoadErrorState
 import com.pokevault.mobile.ui.feature.components.PokemonCardItem
 import com.pokevault.mobile.ui.feature.home.state.HomeEffect
 import com.pokevault.mobile.ui.feature.home.state.HomeEvent
@@ -146,6 +147,12 @@ fun HomeContent(
         Spacer(Modifier.height(10.dp))
         if (state.isLoading && state.cards.isEmpty()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = MarketOrange)
+        } else if (state.errorMessage != null && state.cards.isEmpty()) {
+            LoadErrorState(
+                title = stringResource(R.string.home_error_loading_title),
+                message = stringResource(R.string.home_error_loading_subtitle),
+                modifier = Modifier.weight(1f),
+            )
         } else if (state.isLoggedIn && state.favorites.isEmpty()) {
             EmptyFavorites(modifier = Modifier.weight(1f))
         } else if (state.cards.isEmpty()) {

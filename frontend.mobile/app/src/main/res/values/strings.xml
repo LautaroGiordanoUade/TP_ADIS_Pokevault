@@ -73,6 +73,8 @@
     <string name="home_gengar_title">GENGAR DESTACADOS</string>
     <string name="home_gengar_subtitle">Iniciá sesión para guardar favoritos</string>
     <string name="home_search_placeholder">Buscar Pikachu, Charizard...</string>
+    <string name="home_error_loading_title">NO PUDIMOS CARGAR LAS CARTAS</string>
+    <string name="home_error_loading_subtitle">No fue posible completar la operacion. Intenta nuevamente.</string>
     <string name="home_no_results_title">NO SE ENCONTRARON CARTAS</string>
     <string name="home_no_results_subtitle">Probá buscar por nombre, rareza, set o artista.</string>
     <string name="home_no_favorites_title">TODAVÍA NO TENÉS FAVORITOS</string>
